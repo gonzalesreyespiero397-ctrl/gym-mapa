@@ -1,0 +1,6 @@
+{
+  "appId": "com.gymmapa.app",
+  "appName": "Gym Mapa",
+  "webDir": "www",
+  "android": { "backgroundColor": "#EDEFF2" }
+}

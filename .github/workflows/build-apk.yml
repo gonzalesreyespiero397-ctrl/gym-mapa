@@ -1,0 +1,65 @@
+name: Construir APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Copiar la app al proyecto Android
+        run: npx cap sync android
+
+      - name: Clave de firma (para que las actualizaciones se instalen encima)
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            mkdir -p ~/.android
+            echo "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+          fi
+
+      - name: Construir APK
+        working-directory: android
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk ../GymMapa.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GymMapa-apk
+          path: GymMapa.apk
+
+      - name: Publicar descarga
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Gym Mapa 1.0.${{ github.run_number }}
+          body: |
+            Descarga **GymMapa.apk** en tu Android e instálalo.
+            Tus rutinas se guardan solo en tu teléfono.
+          files: GymMapa.apk
+          make_latest: true
