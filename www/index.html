@@ -16,13 +16,13 @@
   --chalk:#EDEFF2; --paper:#FFFFFF; --plate:#E1E5EA; --ink:#1A2130; --steel:#5F6879;
   --line:#D3D8DF; --muscle:#D93A26; --muscle2:#F28C38; --body:#C3CAD4; --cobalt:#2341C9;
   --r-s:8px; --r-m:14px; --r-l:22px;
-  --muscle3:#EDB93C; --hover:#AEB6C2; --hoverp:#B92E1C; --dangerbg:#FBE5E1; --danger:#A3271A; --fig:#8C95A3; --prop:#7A8291;
+  --muscle3:#EDB93C; --hover:#AEB6C2; --hoverp:#B92E1C; --dangerbg:#FBE5E1; --danger:#A3271A; --fig:#9AA2AE; --figm:#A9B0BB; --hair:#4A5263; --prop:#7A8291;
   color-scheme:light;
 }
 [data-theme="dark"]{
   --chalk:#1C2028; --paper:#262B34; --plate:#2E343E; --ink:#E9ECF1; --steel:#9CA5B4;
   --line:#3B424E; --muscle:#F0533C; --muscle2:#D9782E; --body:#4A5261; --cobalt:#7089FF;
-  --muscle3:#B98A2A; --hover:#5D6676; --hoverp:#FF7560; --dangerbg:#3D2522; --danger:#FF9C8C; --fig:#6E7788; --prop:#8992A2;
+  --muscle3:#B98A2A; --hover:#5D6676; --hoverp:#FF7560; --dangerbg:#3D2522; --danger:#FF9C8C; --fig:#5F6878; --figm:#6A7384; --hair:#2A303A; --prop:#8992A2;
   color-scheme:dark;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -46,6 +46,8 @@ h1,h2,h3,.cond{font-family:"Barlow Condensed",sans-serif;letter-spacing:.005em}
 .map svg{width:100%;max-width:190px;height:auto;display:block}
 .map span{font-family:"Barlow Condensed";font-weight:600;font-size:15px;color:var(--steel);margin-top:2px}
 .b{fill:var(--body)}
+.b path{stroke:var(--plate);stroke-width:.5;stroke-linejoin:round}
+.m{stroke-linejoin:round}
 .m{fill:var(--body);stroke:var(--plate);stroke-width:.7;transition:fill .18s}
 .m.p{fill:var(--muscle)}
 .m.s{fill:var(--muscle2)}
@@ -73,6 +75,15 @@ h1,h2,h3,.cond{font-family:"Barlow Condensed",sans-serif;letter-spacing:.005em}
 .anim svg{width:100%;height:auto;display:block;max-height:300px}
 .anim .play{position:absolute;right:10px;bottom:10px;width:40px;height:40px;border-radius:50%;background:var(--paper);display:grid;place-items:center;color:var(--ink)}
 .anim .play svg{width:16px;height:16px}
+.tempo{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.tempo span{font-size:13.5px;padding:4px 10px;border-radius:999px;background:var(--chalk);color:var(--steel);transition:background .15s,color .15s}
+.tempo span.on{background:var(--ink);color:var(--chalk)}
+.anim video{width:100%;max-height:360px;border-radius:14px;display:block;background:#000}
+#vidbar{margin-top:10px;text-align:center}
+.vbtn{margin-top:0;cursor:pointer}
+.seg{display:inline-flex;background:var(--chalk);border-radius:12px;padding:3px}
+.seg button{padding:8px 16px;border-radius:10px;font-weight:600;color:var(--steel)}
+.seg button[aria-pressed="true"]{background:var(--paper);color:var(--ink)}
 .fig-note{font-size:13px;color:var(--steel);margin-top:6px;text-align:center}
 .m.hit:focus{outline:none}
 .m.hit:focus-visible{stroke:var(--cobalt);stroke-width:1.6}
@@ -432,14 +443,12 @@ const EXMAP=Object.fromEntries(EX.map(e=>[e.id,e]));
 const mir=s=>[s,s.replace(/^<(\w+)/,'<$1 transform="translate(100,0) scale(-1,1)"')];
 const P=d=>mir(`<path d="${d}"/>`);
 const E=(cx,cy,rx,ry,rot=0)=>mir(`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"${rot?` transform="rotate(${rot} ${cx} ${cy})"`:''}/>`);
-const BASE=[
- '<ellipse cx="50" cy="12" rx="7.2" ry="8.6"/>','<rect x="45.5" y="18" width="9" height="10" rx="2"/>',
- '<path d="M37 27 Q50 24 63 27 L66.5 34 Q66 58 64 70 Q63 80 64 88 L36 88 Q37 80 36 70 Q34 58 33.5 34 Z"/>',
- '<path d="M36 86 L64 86 Q67.5 96 64.5 104 L50 110 L35.5 104 Q32.5 96 36 86 Z"/>',
- ...E(30,48,5.2,15,8),...E(26.2,73,4.4,12.5,6),...E(24,91,3.3,4.6),
- ...P('M35.6 98 Q34.6 120 38.3 141 L46.6 141 Q49.6 120 49.6 104 Z'),...E(42.4,144,4.7,4.6),
- ...P('M38 146 Q36.8 160 39.5 178 L44.8 178 Q47.6 160 47 146 Z'),...E(42.2,182.5,4.8,3)
-];
+// smooth anatomical silhouette (left half mirrored)
+function crPath(pts){let d=`M${pts[0][0]} ${pts[0][1]}`;for(let i=0;i<pts.length-1;i++){const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+  const c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6],c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];d+=` C${c1[0].toFixed(2)} ${c1[1].toFixed(2)} ${c2[0].toFixed(2)} ${c2[1].toFixed(2)} ${p2[0]} ${p2[1]}`}return d}
+const HALF=[[50,19.6],[45.8,20.4],[45.3,26],[38.4,28.4],[32,30.6],[28.4,35.4],[26.8,44],[25.8,53.4],[24,62],[22.4,72],[21.6,83],[20.4,88.6],[21.2,94.6],[23.8,96.6],[25.8,94],[26.6,86],[28.6,76],[30.4,66],[32.2,57],[34.2,47.6],[35.4,41.6],[35.6,50],[36.6,62],[36.2,74],[35,84],[34.4,94],[35,108],[36.6,124],[38,138],[37.8,146],[37.4,156],[38.8,168],[39.6,177],[37.4,182],[37.2,185.4],[44.8,185.6],[45.4,180],[45.6,174],[46.8,162],[46.8,150],[46.4,142],[48.2,128],[49.2,114],[50,106.4]];
+const SIL=crPath(HALF)+' '+crPath(HALF.slice().reverse().map(([x,y])=>[100-x,y])).replace(/^M[^C]*/,'')+'Z';
+const BASE=['<ellipse cx="50" cy="11.6" rx="7" ry="8.6"/>',`<path d="${SIL}"/>`];
 const SHAPES={
  front:{
   trap_sup:P('M45.3 22 L45.8 28.4 L38.5 29.6 Z'),
@@ -528,6 +537,7 @@ const PAT={
  lunge:{v:'s',extra:[['hp','kn2','th'],['kn2','an2','sn'],['an2','ft2','ft']],A:{hd:[100,22],nk:[100,38],hp:[100,82],kn:[116,108],an:[122,138],ft:[132,140],kn2:[90,110],an2:[80,136],ft2:[72,140],el:[100,60],ha:[100,80]},B:{hd:[100,44],nk:[100,60],hp:[100,104],kn:[126,112],kn2:[98,134],an2:[72,134],ft2:[64,140],el:[100,82],ha:[100,102]}},
  hipthrust:{v:'s',A:{hd:[46,82],nk:[60,92],hp:[96,124],kn:[128,106],an:[134,138],ft:[144,140],el:[78,112],ha:[96,118]},B:{hd:[48,84],nk:[62,92],hp:[98,92],kn:[130,94],el:[80,94],ha:[98,86]},props:()=>bench(22,96,40)},
  abductor:{v:'f',A:{hd:[100,30],nk:[100,46],hp:[100,88],sL:[86,50],sR:[114,50],eL:[80,70],hL:[84,88],eR:[120,70],hR:[116,88],pL:[92,90],pR:[108,90],kL:[92,108],aL:[92,138],kR:[108,108],aR:[108,138]},B:{kL:[62,104],aL:[58,134],kR:[138,104],aR:[142,134]},props:()=>`<rect x="82" y="92" width="36" height="6" rx="2" fill="var(--prop)"/>`},
+ seatedcalf:{v:'s',A:{hd:[96,30],nk:[96,46],hp:[94,92],kn:[126,92],an:[128,128],ft:[140,130],el:[100,70],ha:[116,88]},B:{an:[129,121]},props:P=>bench(78,96,40)+`<rect x="118" y="${(P.kn[1]-12).toFixed(1)}" width="18" height="5" rx="2" fill="var(--prop)"/><rect x="128" y="130" width="22" height="4" fill="var(--prop)"/>`},
  toeraise:{v:'s',A:{...SB},B:{ft:[108,128]},props:()=>`<line x1="84" y1="0" x2="84" y2="141" stroke="var(--prop)" stroke-width="4"/>`},
  glutebridge:{v:'s',A:{hd:[44,132],nk:[60,134],hp:[100,134],kn:[128,108],an:[136,138],ft:[146,140],el:[80,140],ha:[98,140]},B:{nk:[60,132],hp:[100,106],kn:[130,104],el:[80,138],ha:[98,138]}},
  calf:{v:'s',A:{...SB},B:{hd:[100,15],nk:[100,31],hp:[100,75],kn:[100,103],an:[100,131],el:[100,53],ha:[100,73]},props:()=>`<rect x="104" y="141" width="30" height="6" fill="var(--prop)"/>`},
@@ -540,50 +550,207 @@ const PAT={
  twist:{v:'f',A:{hp:[100,104],pL:[92,104],pR:[108,104],kL:[80,86],aL:[70,112],kR:[120,86],aR:[130,112],hd:[84,42],nk:[90,58],sL:[78,62],sR:[102,56],eL:[74,80],hL:[72,96],eR:[92,80],hR:[78,96]},B:{hd:[116,42],nk:[110,58],sL:[98,56],sR:[122,62],eL:[108,80],hL:[122,96],eR:[126,80],hR:[128,96]}},
  woodchop:{v:'f',A:{...FB,nk:[104,36],hd:[106,20],sL:[90,38],sR:[118,42],eL:[118,22],hL:[140,8],eR:[130,30],hR:[144,10]},B:{nk:[96,38],hd:[94,22],sL:[84,42],sR:[110,38],eL:[80,64],hL:[66,88],eR:[84,66],hR:[70,90]},cable:[[192,-16]]}
 };
-const EXPAT={'press-banca':'bench','press-inclinado':'bench',aperturas:'fly',fondos:'dip',flexiones:'pushup','cruce-poleas':'cablefly',dominadas:'pullup',jalon:'pulldown','remo-barra':'rowbent','remo-mancuerna':'rowbent','remo-polea':'rowseat','peso-muerto':'deadlift',encogimientos:'shrug','press-militar':'ohp',laterales:'lateral',pajaros:'lateral','face-pull':'facepull','curl-barra':'curl','curl-martillo':'curl','curl-concentrado':'curl','triceps-polea':'pushdown','press-frances':'skull','patada-triceps':'kickback','curl-muneca':'wrist',sentadilla:'squat',prensa:'legpress',zancadas:'lunge','extension-cuad':'legext','curl-femoral':'legcurl','peso-muerto-rumano':'deadlift','hip-thrust':'hipthrust','aductores-maq':'adductor',talones:'calf',bulgara:'lunge',plancha:'plank',crunch:'crunch','elev-piernas':'hangleg','russian-twist':'twist',hiperextensiones:'hinge',lenador:'woodchop',goblet:'squat','sentadilla-libre':'squat','press-hombro-manc':'ohp','rumano-manc':'deadlift','puente-gluteo':'glutebridge','talones-sentado':'calf',abduccion:'abductor','elev-puntas':'toeraise'};
-const PART={to:['pec_sup','pec_inf','serrato','dorsal','recto','oblicuos','erectores','trap_sup','trap_med','romboides'],ua:['biceps','braquial','triceps'],la:['ante_flex','ante_ext'],th:['cuadriceps','isquios','gluteo_may','gluteo_med','aductores'],sn:['gemelos','soleo','tibial'],ft:['tibial']};
-const W={to:13,ua:8,la:7,th:10,sn:8,ft:5};
-function figSVG(ex,t){
-  const pat=PAT[EXPAT[ex.id]];
-  const P={};for(const k in pat.A){const a=pat.A[k],b=(pat.B[k]||a);P[k]=[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]}
-  const lv=ks=>ks.some(k=>ex.p.includes(k))?'var(--muscle)':ks.some(k=>ex.s.includes(k))?'var(--muscle2)':ks.some(k=>ex.e.includes(k))?'var(--muscle3)':null;
-  const col=part=>lv(PART[part])||'var(--fig)';
-  let o=`<svg viewBox="0 -22 200 168" role="img" aria-label="Animación de ${esc(ex.n)}"><line x1="6" y1="141" x2="194" y2="141" stroke="var(--line)" stroke-width="2"/>`;
+const EXPAT={'press-banca':'bench','press-inclinado':'bench',aperturas:'fly',fondos:'dip',flexiones:'pushup','cruce-poleas':'cablefly',dominadas:'pullup',jalon:'pulldown','remo-barra':'rowbent','remo-mancuerna':'rowbent','remo-polea':'rowseat','peso-muerto':'deadlift',encogimientos:'shrug','press-militar':'ohp',laterales:'lateral',pajaros:'lateral','face-pull':'facepull','curl-barra':'curl','curl-martillo':'curl','curl-concentrado':'curl','triceps-polea':'pushdown','press-frances':'skull','patada-triceps':'kickback','curl-muneca':'wrist',sentadilla:'squat',prensa:'legpress',zancadas:'lunge','extension-cuad':'legext','curl-femoral':'legcurl','peso-muerto-rumano':'deadlift','hip-thrust':'hipthrust','aductores-maq':'adductor',talones:'calf',bulgara:'lunge',plancha:'plank',crunch:'crunch','elev-piernas':'hangleg','russian-twist':'twist',hiperextensiones:'hinge',lenador:'woodchop',goblet:'squat','sentadilla-libre':'squat','press-hombro-manc':'ohp','rumano-manc':'deadlift','puente-gluteo':'glutebridge','talones-sentado':'seatedcalf',abduccion:'abductor','elev-puntas':'toeraise'};
+/* ---------- Human figure engine ---------- */
+const CON_A=['squat','pushup','dip','lunge','fly','legpress'];
+const FACE_DOWN=['pushup','plank','legcurl','hinge'];
+const CHAINS_S=[['nk','el','ha'],['hp','kn','an'],['hp','kn2','an2']],TIPS_S=[['nk','hd'],['an','ft'],['an2','ft2'],['ha','tp']];
+const CHAINS_F=[['sL','eL','hL'],['sR','eR','hR'],['pL','kL','aL'],['pR','kR','aR']],TIPS_F=[['nk','hd']];
+const V={add:(a,b)=>[a[0]+b[0],a[1]+b[1]],sub:(a,b)=>[a[0]-b[0],a[1]-b[1]],mul:(a,k)=>[a[0]*k,a[1]*k],len:a=>Math.hypot(a[0],a[1]),ang:a=>Math.atan2(a[1],a[0]),lerp:(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t],pol:(a,l)=>[Math.cos(a)*l,Math.sin(a)*l],cross:(a,b)=>a[0]*b[1]-a[1]*b[0]};
+const same=(a,b)=>Math.abs(a[0]-b[0])<.01&&Math.abs(a[1]-b[1])<.01;
+function angLerp(a,b,t){let d=b-a;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;return a+d*t}
+function pose(pat,t){
+  const A=pat.A,B={...pat.A,...pat.B},P={},f=pat.v==='f';
+  const chains=f?CHAINS_F:CHAINS_S,tips=f?TIPS_F:TIPS_S,dep=new Set();
+  chains.forEach(c=>{if(A[c[1]]){dep.add(c[1]);dep.add(c[2])}});tips.forEach(([p,c])=>{if(A[c])dep.add(c)});
+  for(const k in A) if(!dep.has(k)) P[k]=V.lerp(A[k],B[k],t);
+  if(!f&&A.hp&&A.nk){ // keep the torso length
+    const L=(V.len(V.sub(A.nk,A.hp))+V.len(V.sub(B.nk,B.hp)))/2,a=angLerp(V.ang(V.sub(A.nk,A.hp)),V.ang(V.sub(B.nk,B.hp)),t);
+    if(same(A.hp,B.hp))P.nk=V.add(P.hp,V.pol(a,L));
+    else if(same(A.nk,B.nk))P.hp=V.sub(P.nk,V.pol(a,L));
+    else{const c=V.lerp(V.lerp(A.hp,A.nk,.5),V.lerp(B.hp,B.nk,.5),t);P.hp=V.sub(c,V.pol(a,L/2));P.nk=V.add(c,V.pol(a,L/2))}
+  }
+  chains.forEach(([r,m,e])=>{
+    if(!A[m])return;
+    const L1=(V.len(V.sub(A[m],A[r]))+V.len(V.sub(B[m],B[r])))/2,L2=(V.len(V.sub(A[e],A[m]))+V.len(V.sub(B[e],B[m])))/2,R=P[r];
+    if(same(A[m],B[m])&&same(A[r],B[r])){P[m]=V.add(R,V.sub(A[m],A[r]));const a=angLerp(V.ang(V.sub(A[e],A[m])),V.ang(V.sub(B[e],B[m])),t);P[e]=V.add(P[m],V.pol(a,L2));return}
+    let E=V.lerp(A[e],B[e],t);
+    const cA=V.cross(V.sub(A[e],A[r]),V.sub(A[m],A[r])),cB=V.cross(V.sub(B[e],B[r]),V.sub(B[m],B[r]));
+    const s=(Math.abs(cA)>=Math.abs(cB)?cA:cB)>=0?1:-1;
+    let d=V.sub(E,R),D=V.len(d)||.01;const Dc=Math.min(Math.max(D,Math.abs(L1-L2)+.05),L1+L2-.05);
+    if(Dc!==D){E=V.add(R,V.mul(d,Dc/D));d=V.sub(E,R);D=Dc}
+    const A1=Math.acos(Math.max(-1,Math.min(1,(L1*L1+D*D-L2*L2)/(2*L1*D))));
+    P[m]=V.add(R,V.pol(V.ang(d)+s*A1,L1));P[e]=E;
+  });
+  tips.forEach(([p,c])=>{if(!A[c])return;const L=(V.len(V.sub(A[c],A[p]))+V.len(V.sub(B[c],B[p])))/2,a=angLerp(V.ang(V.sub(A[c],A[p])),V.ang(V.sub(B[c],B[p])),t);P[c]=V.add(P[p],V.pol(a,L))});
+  return P;
+}
+const fx=n=>n.toFixed(1),pt=p=>fx(p[0])+' '+fx(p[1]);
+const perp=(a,b)=>{const d=V.sub(b,a),l=V.len(d)||1;return[d[1]/l,-d[0]/l]};
+function limb(a,b,wa,wb,fill,extra=''){
+  const n=perp(a,b),a1=V.add(a,V.mul(n,wa)),a2=V.sub(a,V.mul(n,wa)),b1=V.add(b,V.mul(n,wb)),b2=V.sub(b,V.mul(n,wb));
+  return `<path d="M${pt(a1)} L${pt(b1)} A${fx(wb)} ${fx(wb)} 0 0 1 ${pt(b2)} L${pt(a2)} A${fx(wa)} ${fx(wa)} 0 0 1 ${pt(a1)}Z" fill="${fill}"${extra}/>`;
+}
+// muscle belly on one side of a segment (side = +1 front, -1 back, 0 centered)
+function belly(a,b,f0,f1,w0,w1,side,bulge,fill,op=1){
+  const n=V.mul(perp(a,b),side||1),w=f=>w0+(w1-w0)*f;
+  if(!side){const c=V.lerp(a,b,(f0+f1)/2),L=V.len(V.sub(b,a))*(f1-f0)/2,ang=V.ang(V.sub(b,a))*180/Math.PI;
+    return `<ellipse cx="${fx(c[0])}" cy="${fx(c[1])}" rx="${fx(L)}" ry="${fx(w((f0+f1)/2)*.62+bulge*.5)}" transform="rotate(${fx(ang)} ${fx(c[0])} ${fx(c[1])})" fill="${fill}" opacity="${op}"/>`}
+  const at=(f,k)=>V.add(V.lerp(a,b,f),V.mul(n,k));
+  const P0=at(f0,w(f0)*.15),P1=at(f1,w(f1)*.15),fa=f0+(f1-f0)*.28,fb=f0+(f1-f0)*.72;
+  const C1=at(fa,w(fa)+bulge),C2=at(fb,w(fb)+bulge),I2=at(fb,-w(fb)*.25),I1=at(fa,-w(fa)*.25);
+  return `<path d="M${pt(P0)} C${pt(C1)} ${pt(C2)} ${pt(P1)} C${pt(I2)} ${pt(I1)} ${pt(P0)}Z" fill="${fill}" opacity="${op}"/>`;
+}
+function smoothClosed(ps){
+  const m=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];let d=`M${pt(m(ps[ps.length-1],ps[0]))}`;
+  ps.forEach((p,i)=>{d+=` Q${pt(p)} ${pt(m(p,ps[(i+1)%ps.length]))}`});return d+'Z';
+}
+const circ=(c,r,fill,op=1)=>`<circle cx="${fx(c[0])}" cy="${fx(c[1])}" r="${fx(r)}" fill="${fill}" opacity="${op}"/>`;
+function figSVG(ex,ph){
+  const key=EXPAT[ex.id],pat=PAT[key],P=pose(pat,ph.t),face=FACE_DOWN.includes(key)?-1:1;
+  const lvl=ks=>ks.some(k=>ex.p.includes(k))?3:ks.some(k=>ex.s.includes(k))?2:ks.some(k=>ex.e.includes(k))?1:0;
+  const FILL=['var(--figm)','var(--muscle3)','var(--muscle2)','var(--muscle)'];
+  // m(): fill, opacity and extra bulge for a group of muscles
+  const m=ks=>{const l=lvl(ks);return{f:FILL[l],o:l===3?.62+.38*ph.c:l?.9:1,b:l===3?1+1.1*ph.c:l===2?.5+.4*ph.c:0}};
+  let o=`<svg viewBox="0 -22 200 168" role="img" aria-label="Animación de ${esc(ex.n)}"><line x1="6" y1="141.5" x2="194" y2="141.5" stroke="var(--line)" stroke-width="2"/>`;
   if(pat.props) o+=pat.props(P);
   const hands=pat.v==='f'?['hL','hR']:[pat.hand||'ha'];
-  if(pat.cable) pat.cable.forEach((a,i)=>{const h=P[hands[Math.min(i,hands.length-1)]];o+=`<line x1="${a[0]}" y1="${a[1]}" x2="${h[0]}" y2="${h[1]}" stroke="var(--prop)" stroke-width="1.6"/><circle cx="${a[0]}" cy="${a[1]}" r="4" fill="var(--prop)"/>`});
-  const segs=(pat.v==='f'?FRONT:SIDE).concat(pat.extra||[]);
-  const order=['to','th','sn','ft','ua','la'];
-  segs.slice().sort((a,b)=>order.indexOf(a[2])-order.indexOf(b[2])).forEach(([a,b,part])=>{
-    o+=`<line x1="${P[a][0].toFixed(1)}" y1="${P[a][1].toFixed(1)}" x2="${P[b][0].toFixed(1)}" y2="${P[b][1].toFixed(1)}" stroke="${col(part)}" stroke-width="${W[part]}" stroke-linecap="round"/>`});
-  const sh=pat.v==='f'?['sL','sR']:['nk'],hp=pat.v==='f'?['pL','pR']:['hp'];
-  const cs=lv(['delt_ant','delt_lat','delt_post']),cg=lv(['gluteo_may','gluteo_med']);
-  if(cs) sh.forEach(k=>o+=`<circle cx="${P[k][0]}" cy="${P[k][1]}" r="6.5" fill="${cs}"/>`);
-  if(cg) hp.forEach(k=>o+=`<circle cx="${P[k][0]}" cy="${P[k][1]}" r="7.5" fill="${cg}"/>`);
-  o+=`<circle cx="${P.hd[0]}" cy="${P.hd[1]}" r="9" fill="var(--fig)"/>`;
+  if(pat.cable) pat.cable.forEach((a,i)=>{const h=P[hands[Math.min(i,hands.length-1)]];o+=`<line x1="${a[0]}" y1="${a[1]}" x2="${fx(h[0])}" y2="${fx(h[1])}" stroke="var(--prop)" stroke-width="1.6"/><circle cx="${a[0]}" cy="${a[1]}" r="4" fill="var(--prop)"/>`});
+  const SK='var(--fig)';
   hands.slice(0,ex.id==='russian-twist'?1:2).forEach(k=>{const [x,y]=P[k];
-    if(ex.eq==='Barra') o+=`<circle cx="${x}" cy="${y}" r="11" fill="none" stroke="var(--ink)" stroke-width="3.5"/><circle cx="${x}" cy="${y}" r="2.5" fill="var(--ink)"/>`;
-    else if(ex.eq==='Mancuernas'||ex.id==='russian-twist') o+=`<rect x="${x-7}" y="${y-3.5}" width="14" height="7" rx="3" fill="var(--ink)"/>`;
+    if(ex.eq==='Barra') o+=`<circle cx="${fx(x)}" cy="${fx(y)}" r="10" fill="none" stroke="var(--ink)" stroke-width="3.5"/><circle cx="${fx(x)}" cy="${fx(y)}" r="2.5" fill="var(--ink)"/>`;
+    else if(ex.eq==='Mancuernas'||ex.id==='russian-twist') o+=pat.v==='f'?`<rect x="${fx(x-2)}" y="${fx(y-7.5)}" width="4" height="15" rx="1.5" fill="var(--ink)"/>`:`<circle cx="${fx(x)}" cy="${fx(y)}" r="5.6" fill="none" stroke="var(--ink)" stroke-width="3"/>`;
   });
+  if(pat.v!=='f'){
+    const nk=P.nk,hp=P.hp,n=V.mul(perp(nk,hp),face),sp=f=>V.lerp(nk,hp,f);
+    const leg=(kn,an,ft,far)=>{const op=far?' opacity=".55"':'';let s=limb(hp,P[kn],7.8,5,SK,op)+limb(P[kn],P[an],5,2.8,SK,op)+limb(P[an],P[ft],2.9,1.9,SK,op);
+      if(!far){
+        let q=m(['cuadriceps']);s+=belly(hp,P[kn],.12,.9,7.8,5,face,q.b+.8,q.f,q.o);
+        q=m(['isquios']);s+=belly(hp,P[kn],.18,.92,7.8,5,-face,q.b+.3,q.f,q.o);
+        q=m(['aductores']);if(lvl(['aductores']))s+=belly(hp,P[kn],.15,.6,4,3,0,q.b,q.f,q.o);
+        q=m(['tibial']);s+=belly(P[kn],P[an],.1,.65,5,2.8,face,q.b*.6,q.f,q.o);
+        q=m(['gemelos']);s+=belly(P[kn],P[an],.05,.5,5,2.8,-face,q.b+1.8,q.f,q.o);
+        q=m(['soleo']);s+=belly(P[kn],P[an],.45,.85,4.2,2.8,-face,q.b*.6+.3,q.f,q.o);}
+      return s};
+    if(P.kn2) o+=leg('kn2','an2','ft2',true);
+    // trunk
+    const F=[[0,6],[.1,9.6],[.28,10.6],[.5,8.2],[.75,7.8],[1,8.2]],Bk=[[1,8],[.72,5.8],[.42,8],[.15,8.2],[0,5.6]];
+    const pts=F.map(([f,w])=>V.add(sp(f),V.mul(n,w))).concat(Bk.map(([f,w])=>V.sub(sp(f),V.mul(n,w))));
+    o+=`<path d="${smoothClosed(pts)}" fill="${SK}"/>`;
+    let q;
+    q=m(['pec_sup','pec_inf']);o+=belly(nk,hp,.06,.38,9,10,face,q.b+1.1,q.f,q.o);
+    q=m(['recto']);o+=belly(nk,hp,.44,.94,7.8,8,face,q.b*.5+.3,q.f,q.o);
+    q=m(['oblicuos']);if(lvl(['oblicuos']))o+=belly(nk,hp,.5,.9,3,3,0,q.b*.5,q.f,q.o);
+    q=m(['serrato']);if(lvl(['serrato']))o+=belly(nk,hp,.3,.48,4,4,0,q.b*.4,q.f,q.o);
+    q=m(['dorsal']);o+=belly(nk,hp,.14,.62,8,7,-face,q.b+1.1,q.f,q.o);
+    q=m(['trap_med','romboides']);o+=belly(nk,hp,.0,.3,6,8,-face,q.b+.6,q.f,q.o);
+    q=m(['erectores']);o+=belly(nk,hp,.62,.97,5.8,7.6,-face,q.b*.6+.3,q.f,q.o);
+    q=m(['gluteo_may','gluteo_med']);o+=circ(V.sub(hp,V.mul(n,5.4)),7.6+q.b*.6,q.f,q.o);
+    // neck + head
+    const hd=P.hd,up=V.mul(perp(hp,nk),-face);o+=limb(nk,V.lerp(nk,hd,.6),4.2,3.6,SK);
+    q=m(['trap_sup']);o+=belly(nk,hd,.0,.5,3.4,3,-face,q.b+1.3,q.f,q.o);
+    o+=circ(V.sub(hd,V.mul(n,1.1)),7.6,'var(--hair)')+circ(V.add(hd,V.mul(n,.9)),6.8,SK)+circ(V.add(V.add(hd,V.mul(n,7.2)),V.mul(V.sub(hd,nk),.02)),1.5,SK);
+    o+=leg('kn','an','ft',false);
+    // arm (in front of the trunk)
+    const el=P.el,ha=P.ha;o+=limb(nk,el,5.2,3.9,SK)+limb(el,ha,3.9,2.6,SK);
+    q=m(['biceps','braquial']);o+=belly(nk,el,.2,.85,5.2,3.9,face,q.b+1.1,q.f,q.o);
+    q=m(['triceps']);o+=belly(nk,el,.12,.78,5.2,3.9,-face,q.b+.9,q.f,q.o);
+    q=m(['ante_flex']);o+=belly(el,ha,.08,.62,3.9,2.6,face,q.b*.6+.4,q.f,q.o);
+    q=m(['ante_ext']);o+=belly(el,ha,.08,.62,3.9,2.6,-face,q.b*.6+.4,q.f,q.o);
+    q=m(['delt_ant','delt_lat','delt_post']);o+=circ(V.lerp(nk,el,.12),6.4+q.b*.5,q.f,q.o);
+    if(P.tp)o+=limb(ha,P.tp,2.3,1.6,SK);
+    o+=circ(ha,3,SK);
+  } else {
+    const top=V.lerp(P.sL,P.sR,.5),bot=V.lerp(P.pL,P.pR,.5),u0=V.sub(P.sR,P.sL),u1=V.sub(P.pR,P.pL);
+    const sw=V.len(u0)/2,hw=V.len(u1)/2,uu=f=>{const u=V.lerp(V.mul(u0,1/(2*sw)),V.mul(u1,1/(2*hw)),f);const l=V.len(u);return[u[0]/l,u[1]/l]};
+    const c=f=>V.lerp(top,bot,f),W=[[0,sw+2.4],[.18,sw+2.8],[.45,hw+1.4],[.66,hw+.2],[1,hw+2.6]];
+    const right=W.map(([f,w])=>V.add(c(f),V.mul(uu(f),w))),left=W.slice().reverse().map(([f,w])=>V.sub(c(f),V.mul(uu(f),w)));
+    const legF=(p,k,a)=>limb(P[p],P[k],6.8,4.6,SK)+limb(P[k],P[a],4.6,2.6,SK)+`<ellipse cx="${fx(P[a][0])}" cy="${fx(P[a][1]+2)}" rx="3.4" ry="2" fill="${SK}"/>`;
+    o+=legF('pL','kL','aL')+legF('pR','kR','aR');
+    let q;
+    ['L','R'].forEach(s=>{const p=P['p'+s],k=P['k'+s],a=P['a'+s];
+      q=m(['cuadriceps']);o+=belly(p,k,.12,.88,6.8,4.6,0,q.b+1,q.f,q.o);
+      q=m(['aductores']);if(lvl(['aductores']))o+=belly(V.lerp(p,bot,.5),V.lerp(k,bot,.25),.05,.7,2.6,2,0,q.b*.5,q.f,q.o);
+      q=m(['tibial']);if(lvl(['tibial']))o+=belly(k,a,.1,.6,3,2.2,0,q.b*.4,q.f,q.o)});
+    o+=`<path d="${smoothClosed(right.concat(left))}" fill="${SK}"/>`;
+    o+=limb(P.nk,V.lerp(P.nk,P.hd,.55),4,3.6,SK)+circ(P.hd,7.4,SK)+`<path d="M${fx(P.hd[0]-7.4)} ${fx(P.hd[1]-.5)} A7.4 7.4 0 0 1 ${fx(P.hd[0]+7.4)} ${fx(P.hd[1]-.5)} Q${fx(P.hd[0])} ${fx(P.hd[1]-5)} ${fx(P.hd[0]-7.4)} ${fx(P.hd[1]-.5)}Z" fill="var(--hair)"/>`;
+    const ang=V.ang(u0)*180/Math.PI;
+    q=m(['pec_sup','pec_inf']);[-1,1].forEach(s=>{const cc=V.add(c(.2),V.mul(uu(.2),s*sw*.48));o+=`<ellipse cx="${fx(cc[0])}" cy="${fx(cc[1])}" rx="${fx(sw*.5+q.b*.3)}" ry="${fx(4.4+q.b*.4)}" transform="rotate(${fx(ang)} ${fx(cc[0])} ${fx(cc[1])})" fill="${q.f}" opacity="${q.o}"/>`});
+    q=m(['recto']);o+=belly(c(.36),c(.96),0,1,3.4,3.4,0,q.b*.4,q.f,q.o);
+    q=m(['oblicuos']);[-1,1].forEach(s=>{o+=belly(V.add(c(.4),V.mul(uu(.4),s*(hw-1.5))),V.add(c(.85),V.mul(uu(.85),s*(hw-1.5))),0,1,1.8,1.8,0,q.b*.4,q.f,q.o)});
+    q=m(['gluteo_med']);if(lvl(['gluteo_med']))[-1,1].forEach(s=>{o+=circ(V.add(bot,V.mul(uu(1),s*(hw+.6))),3.4+q.b*.4,q.f,q.o)});
+    q=m(['trap_sup']);if(lvl(['trap_sup']))[-1,1].forEach(s=>{o+=belly(P.nk,V.add(top,V.mul(uu(0),s*sw*.8)),.1,.9,2.2,2.2,0,q.b*.6,q.f,q.o)});
+    ['L','R'].forEach(s=>{const sh=P['s'+s],e=P['e'+s],h=P['h'+s];
+      o+=limb(sh,e,4.6,3.6,SK)+limb(e,h,3.6,2.4,SK);
+      q=m(['biceps','braquial']);o+=belly(sh,e,.2,.85,4.6,3.6,0,q.b+.7,q.f,q.o);
+      q=m(['ante_flex','ante_ext']);o+=belly(e,h,.08,.62,3.6,2.4,0,q.b*.5+.3,q.f,q.o);
+      q=m(['delt_ant','delt_lat','delt_post']);o+=circ(V.lerp(sh,e,.1),5.6+q.b*.5,q.f,q.o);
+      o+=circ(h,2.5,SK)});
+  }
   return o+'</svg>';
 }
-let anim={raf:0,paused:false,t0:0,off:0,ex:null};
+/* ---------- Animation loop with guided tempo ---------- */
+const TEMPO=['Contrae · 1 s','Aprieta','Regresa lento · 2 s','Estira'];
+let anim={raf:0,paused:false,t0:0,off:0,ex:null,lab:-1};
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PLAY='<svg viewBox="0 0 16 16"><path d="M4 2l10 6-10 6z" fill="currentColor"/></svg>',PAUSE='<svg viewBox="0 0 16 16"><rect x="3" y="2" width="3.5" height="12" fill="currentColor"/><rect x="9.5" y="2" width="3.5" height="12" fill="currentColor"/></svg>';
-function phase(now){const d=(PAT[EXPAT[anim.ex.id]].dur||2600);return (1-Math.cos(2*Math.PI*((now-anim.t0+anim.off)%d)/d))/2}
+const ease=u=>u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+function phase(now){
+  const key=EXPAT[anim.ex.id],d=PAT[key].dur||3600,x=((now-anim.t0+anim.off)%d)/d;
+  if(key==='plank'){const c=.75+.25*Math.sin(x*2*Math.PI);return{t:.5+.5*Math.sin(x*2*Math.PI),c,lab:4}}
+  let c,lab;
+  if(x<.25){c=ease(x/.25);lab=0}else if(x<.36){c=1;lab=1}else if(x<.86){c=1-ease((x-.36)/.5);lab=2}else{c=0;lab=3}
+  return{t:CON_A.includes(key)?1-c:c,c,lab};
+}
+function drawFrame(now){
+  const b=$('#fig');if(!b)return false;const ph=phase(now);b.innerHTML=figSVG(anim.ex,ph);
+  if(ph.lab!==anim.lab){anim.lab=ph.lab;const tb=$('#tempo');if(tb)tb.innerHTML=ph.lab===4?'<span class="on">Aguanta la posición respirando normal</span>':TEMPO.map((s,i)=>`<span class="${i===ph.lab?'on':''}">${s}</span>`).join('')}
+  return true;
+}
 function startAnim(ex){
-  stopAnim();anim.ex=ex;anim.paused=reduceMotion;anim.t0=performance.now();anim.off=0;
-  const box=$('#fig');if(!box)return;
-  if(anim.paused){box.innerHTML=figSVG(ex,1);updPlay();return}
-  const loop=now=>{const b=$('#fig');if(!b)return;b.innerHTML=figSVG(ex,phase(now));anim.raf=requestAnimationFrame(loop)};
+  stopAnim();anim.ex=ex;anim.paused=reduceMotion;anim.t0=performance.now();anim.off=0;anim.lab=-1;
+  if(!$('#fig'))return;
+  if(anim.paused){anim.off=PAT[EXPAT[ex.id]].dur*.3||1000;drawFrame(anim.t0);updPlay();return}
+  const loop=now=>{if(drawFrame(now))anim.raf=requestAnimationFrame(loop)};
   anim.raf=requestAnimationFrame(loop);updPlay();
 }
 function stopAnim(){cancelAnimationFrame(anim.raf);anim.raf=0}
 function updPlay(){const b=$('#playbtn');if(b){b.innerHTML=anim.paused?PLAY:PAUSE;b.setAttribute('aria-label',anim.paused?'Reproducir animación':'Pausar animación')}}
 function togglePlay(){
-  if(anim.paused){anim.paused=false;anim.t0=performance.now();const loop=now=>{const b=$('#fig');if(!b)return;b.innerHTML=figSVG(anim.ex,phase(now));anim.raf=requestAnimationFrame(loop)};anim.raf=requestAnimationFrame(loop)}
+  if(anim.paused){anim.paused=false;anim.t0=performance.now();const loop=now=>{if(drawFrame(now))anim.raf=requestAnimationFrame(loop)};anim.raf=requestAnimationFrame(loop)}
   else{anim.paused=true;anim.off+=performance.now()-anim.t0;stopAnim()}
   updPlay();
+}
+
+/* ---------- Own videos (IndexedDB, only on this phone) ---------- */
+const VDB={db:null,
+  open(){return new Promise((res,rej)=>{if(this.db)return res(this.db);const r=indexedDB.open('gym-mapa-videos',1);r.onupgradeneeded=()=>r.result.createObjectStore('v');r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>rej(r.error)})},
+  async tx(mode,fn){const db=await this.open();return new Promise((res,rej)=>{const q=fn(db.transaction('v',mode).objectStore('v'));q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})},
+  get(k){return this.tx('readonly',s=>s.get(k))},put(k,v){return this.tx('readwrite',s=>s.put(v,k))},del(k){return this.tx('readwrite',s=>s.delete(k))}
+};
+let vidUrl=null;
+async function renderVidbar(exId,mode,confirmDel){
+  const bar=$('#vidbar');if(!bar)return;let has=false;
+  try{has=!!(await VDB.get(exId))}catch(e){bar.innerHTML='';return}
+  if(S.sheetEx!==exId)return;
+  if(has&&confirmDel){bar.innerHTML=`<div class="confirm" style="margin-top:0"><p>¿Quitar tu video de este ejercicio?</p><div class="row2"><button class="btn ghost" data-act="vdelno">Cancelar</button><button class="btn danger" data-act="vdelyes">Quitar video</button></div></div>`;return}
+  bar.innerHTML=has?`<div class="seg" role="group" aria-label="Qué mostrar"><button data-vmode="anim" aria-pressed="${mode!=='video'}">Animación</button><button data-vmode="video" aria-pressed="${mode==='video'}">Mi video</button></div><button class="linkbtn" data-act="vdel" style="display:block;margin:8px auto 0">Quitar mi video</button>`
+   :`<label class="btn ghost vbtn">+ Añadir mi video<input type="file" accept="video/*" id="vfile" hidden></label><p class="sub" style="font-size:13.5px;margin-top:4px">Graba o elige un video de tu galería. Se guarda solo en este teléfono.</p>`;
+  const f=$('#vfile');if(f)f.onchange=async()=>{const file=f.files[0];if(!file)return;
+    if(file.size>200*1024*1024){toast('El video pesa demasiado (máximo 200 MB)');return}
+    try{await VDB.put(exId,file);toast('Video guardado');showVideo(exId)}catch(e){toast('No se pudo guardar el video. Revisa el espacio del teléfono.')}};
+}
+async function showVideo(exId){
+  let blob=null;try{blob=await VDB.get(exId)}catch(e){}
+  if(!blob||S.sheetEx!==exId)return;stopAnim();
+  if(vidUrl)URL.revokeObjectURL(vidUrl);vidUrl=URL.createObjectURL(blob);
+  $('#animbox').innerHTML=`<video src="${vidUrl}" controls loop playsinline muted autoplay></video>`;$('#tempo').style.display='none';
+  renderVidbar(exId,'video');
+}
+function showAnimMode(exId){
+  $('#animbox').innerHTML='<div id="fig"></div><button class="play" id="playbtn" data-act="play"></button>';$('#tempo').style.display='';
+  if(vidUrl){URL.revokeObjectURL(vidUrl);vidUrl=null}
+  startAnim(EXMAP[exId]);renderVidbar(exId,'anim');
 }
 
 /* ---------- Theme ---------- */
@@ -790,6 +957,7 @@ function renderWorkout(){
   <h2>${esc(e.n)}</h2>
   <p class="target">Objetivo: ${esc(it.sets)} × ${esc(it.reps)} · descanso ${esc(it.rest)} s</p>
   <div class="anim"><div id="fig"></div><button class="play" id="playbtn" data-act="play"></button></div>
+  <div class="tempo" id="tempo" aria-live="off"></div>
   <div id="sets">${sets.map((s,j)=>`<div class="setrow ${s.done?'done':''}" data-j="${j}">
     <span class="n">${j+1}</span>
     <span><label for="w${j}">Peso (kg)</label><input id="w${j}" data-sf="w" inputmode="decimal" value="${esc(s.w)}" placeholder="0"></span>
@@ -938,13 +1106,14 @@ function histHTML(exId){
 
 /* ---------- Sheets ---------- */
 function openSheet(html){const s=$('#sheet');s.innerHTML=`<div class="grab"></div><button class="close" data-act="close" aria-label="Cerrar">×</button><div class="wrap">${html}</div>`;s.classList.add('open');$('#scrim').classList.add('open');s.scrollTop=0;setTimeout(()=>s.querySelector('.close').focus(),50)}
-function closeSheet(){stopAnim();$('#sheet').classList.remove('open');$('#scrim').classList.remove('open')}
+function closeSheet(){stopAnim();S.sheetEx=null;if(vidUrl){URL.revokeObjectURL(vidUrl);vidUrl=null}$('#sheet').classList.remove('open');$('#scrim').classList.remove('open')}
 const mchips=ks=>ks.length?`<div class="mlist">${ks.map(k=>`<button data-msheet="${k}">${MUSCLES[k]}</button>`).join('')}</div>`:`<p class="sub" style="font-size:15px;margin-top:4px">Ninguno</p>`;
 function exSheet(id){
   const e=EXMAP[id];
   openSheet(`<h2>${esc(e.n)}</h2><p class="eq">${esc(e.eq)}</p>
-  <div class="anim"><div id="fig"></div><button class="play" id="playbtn" data-act="play"></button></div>
-  <p class="fig-note">El color muestra cómo participa cada músculo</p>
+  <div class="anim" id="animbox"><div id="fig"></div><button class="play" id="playbtn" data-act="play"></button></div>
+  <div class="tempo" id="tempo" aria-live="off"></div>
+  <div id="vidbar"></div>
   <div class="plate">${bothMaps(e.p,e.s,e.e)}${LEG3}</div>
   <div class="mus3">
     <div><h3><i style="background:var(--muscle)"></i>Principal</h3>${mchips(e.p)}</div>
@@ -956,10 +1125,10 @@ function exSheet(id){
   ${e.er.length?`<div class="errs"><h3>Errores comunes</h3><ul>${e.er.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
   <button class="btn" data-addto="${e.id}">Añadir a una rutina</button>
   ${histHTML(e.id)}`);
-  startAnim(e);
+  S.sheetEx=e.id;startAnim(e);renderVidbar(e.id,'anim');
 }
 function muscleSheet(k){
-  stopAnim();
+  stopAnim();S.sheetEx=null;
   const m=MUS[k],main=EX.filter(e=>e.p.includes(k)),help=EX.filter(e=>e.s.includes(k));
   const row=e=>`<button class="row" data-ex="${e.id}"><span class="dot">${bodySVG(sideOf(e.p[0]),e.p,e.s,false,true,e.e)}</span><span><b>${esc(e.n)}</b><small>${esc(e.eq)}</small></span><span class="chev" aria-hidden="true">›</span></button>`;
   openSheet(`<p class="qstep">${GROUPS[m.g]}</p><h2>${m.n}</h2>
@@ -1007,6 +1176,7 @@ document.addEventListener('click',ev=>{
   const t=ev.target.closest('button,[data-muscle]');if(!t) return;
   const d=t.dataset;
   if(d.tab){S.tab=d.tab;S.confirmDel=false;closeSheet();render();scrollTo(0,0);return}
+  if(d.vmode){if(d.vmode==='video')showVideo(S.sheetEx);else showAnimMode(S.sheetEx);return}
   if(d.msheet){muscleSheet(d.msheet);return}
   if(d.filter){closeSheet();S.tab='ex';S.muscle=d.filter;S.q='';render();scrollTo(0,0);return}
   if(d.muscle!==undefined){S.muscle=S.muscle===d.muscle?null:d.muscle;render();return}
@@ -1043,6 +1213,9 @@ document.addEventListener('click',ev=>{
     case 't15':T.end=Math.max(T.end,Date.now())+15000;$('#timer').classList.remove('end');if(!T.int){T.int=setInterval(tick,250)}tick();break;
     case 'tskip':stopTimer();break;
     case 'play':togglePlay();break;
+    case 'vdel':renderVidbar(S.sheetEx,'video',true);break;
+    case 'vdelno':renderVidbar(S.sheetEx,'video');break;
+    case 'vdelyes':{const id=S.sheetEx;VDB.del(id).then(()=>{toast('Video quitado');showAnimMode(id)}).catch(()=>toast('No se pudo quitar el video'));break}
     case 'theme':{const t=document.documentElement.dataset.theme==='dark'?'light':'dark';applyTheme(t);try{localStorage.setItem(TKEY,t)}catch(e){}break}
     case 'new':{const id=newId();S.routines[id]={id,name:'',items:[],updated:Date.now()};persist(id);S.editing=id;render();setTimeout(()=>$('#rname').focus(),50);break}
     case 'back':S.editing=null;S.confirmDel=false;render();break;
