@@ -34,9 +34,11 @@ jobs:
         env:
           KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
         run: |
+          mkdir -p ~/.android
           if [ -n "$KEYSTORE_B64" ]; then
-            mkdir -p ~/.android
             echo "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+          else
+            cp android/keystore/gymmapa.keystore ~/.android/debug.keystore
           fi
 
       - name: Construir APK
