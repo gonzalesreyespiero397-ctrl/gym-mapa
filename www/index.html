@@ -14,15 +14,15 @@
 @font-face{font-family:"Barlow Condensed";font-weight:800;font-style:normal;font-display:swap;src:url(fonts/barlow-condensed-latin-800-normal.woff2) format("woff2")}
 :root{
   --chalk:#EDEFF2; --paper:#FFFFFF; --plate:#E1E5EA; --ink:#1A2130; --steel:#5F6879;
-  --line:#D3D8DF; --muscle:#D93A26; --muscle2:#F2AE9F; --body:#C3CAD4; --cobalt:#2341C9;
+  --line:#D3D8DF; --muscle:#D93A26; --muscle2:#F28C38; --body:#C3CAD4; --cobalt:#2341C9;
   --r-s:8px; --r-m:14px; --r-l:22px;
-  --hover:#AEB6C2; --hoverp:#B92E1C; --dangerbg:#FBE5E1; --danger:#A3271A; --fig:#8C95A3; --prop:#7A8291;
+  --muscle3:#EDB93C; --hover:#AEB6C2; --hoverp:#B92E1C; --dangerbg:#FBE5E1; --danger:#A3271A; --fig:#8C95A3; --prop:#7A8291;
   color-scheme:light;
 }
 [data-theme="dark"]{
   --chalk:#1C2028; --paper:#262B34; --plate:#2E343E; --ink:#E9ECF1; --steel:#9CA5B4;
-  --line:#3B424E; --muscle:#F0533C; --muscle2:#9C5446; --body:#4A5261; --cobalt:#7089FF;
-  --hover:#5D6676; --hoverp:#FF7560; --dangerbg:#3D2522; --danger:#FF9C8C; --fig:#6E7788; --prop:#8992A2;
+  --line:#3B424E; --muscle:#F0533C; --muscle2:#D9782E; --body:#4A5261; --cobalt:#7089FF;
+  --muscle3:#B98A2A; --hover:#5D6676; --hoverp:#FF7560; --dangerbg:#3D2522; --danger:#FF9C8C; --fig:#6E7788; --prop:#8992A2;
   color-scheme:dark;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -49,6 +49,23 @@ h1,h2,h3,.cond{font-family:"Barlow Condensed",sans-serif;letter-spacing:.005em}
 .m{fill:var(--body);stroke:var(--plate);stroke-width:.7;transition:fill .18s}
 .m.p{fill:var(--muscle)}
 .m.s{fill:var(--muscle2)}
+.m.e{fill:var(--muscle3)}
+.m.h1{fill:var(--muscle);fill-opacity:.3}
+.m.h2{fill:var(--muscle);fill-opacity:.62}
+.m.h3{fill:var(--muscle)}
+.m.sel{fill:var(--muscle)}
+.m.sel.s,.m.sel.e{fill:var(--muscle)}
+.mlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.mlist button{padding:5px 10px;border-radius:999px;background:var(--paper);font-size:14px}
+.errs{margin-top:16px;background:var(--dangerbg);border-radius:var(--r-m);padding:12px 14px}
+.errs h3{font-size:19px;color:var(--danger)}
+.errs li{margin:4px 0 0 18px;font-size:15px}
+.mus3{display:grid;gap:8px;margin-top:16px}
+.mus3 div{background:var(--chalk);border-radius:var(--r-m);padding:10px 12px}
+.mus3 h3{font-size:17px;display:flex;align-items:center;gap:6px}
+.mus3 h3 i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.mus3 .mlist button{background:var(--paper)}
+.ginfo{font-size:15px;margin-top:10px}
 .m.hit{cursor:pointer}
 .m.hit:hover{fill:var(--hover)}
 .m.hit.p:hover{fill:var(--hoverp)}
@@ -61,6 +78,7 @@ h1,h2,h3,.cond{font-family:"Barlow Condensed",sans-serif;letter-spacing:.005em}
 .m.hit:focus-visible{stroke:var(--cobalt);stroke-width:1.6}
 .legend{display:flex;gap:14px;justify-content:center;font-size:13px;color:var(--steel);margin-top:6px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.linkbtn{color:var(--cobalt);font-weight:600;text-decoration:underline;font-size:14px}
 .hint{text-align:center;font-size:14px;color:var(--steel);margin-top:4px}
 
 /* Filters */
@@ -214,7 +232,38 @@ h1,h2,h3,.cond{font-family:"Barlow Condensed",sans-serif;letter-spacing:.005em}
 <div class="timer" id="timer" role="timer"><b id="tnum">1:30</b><span class="tl" id="tlbl">Descanso</span><button data-act="t15">+15 s</button><button data-act="tskip">Saltar</button></div>
 
 <script>
-const MUSCLES={pecho:'Pecho',hombros:'Hombros',biceps:'Bíceps',triceps:'Tríceps',antebrazos:'Antebrazos',abdomen:'Abdomen',oblicuos:'Oblicuos',trapecio:'Trapecio',dorsales:'Dorsales',lumbar:'Lumbares',gluteos:'Glúteos',cuadriceps:'Cuádriceps',isquios:'Isquiotibiales',aductores:'Aductores',gemelos:'Gemelos'};
+const MUS={
+ pec_sup:{n:'Pectoral superior',g:'pecho',v:'front',i:'La parte alta del pecho, junto a la clavícula. Lleva el brazo hacia delante y hacia arriba. Se trabaja más con presses e inclinados.'},
+ pec_inf:{n:'Pectoral medio e inferior',g:'pecho',v:'front',i:'La mayor parte del pecho. Junta los brazos delante del cuerpo y empuja. Es el motor del press de banca y las flexiones.'},
+ serrato:{n:'Serrato anterior',g:'pecho',v:'front',i:'Los "dedos" a los lados de las costillas. Pega la escápula al tórax y la mueve hacia delante; protege el hombro al empujar.'},
+ delt_ant:{n:'Deltoides anterior',g:'hombros',v:'front',i:'La parte delantera del hombro. Sube el brazo hacia delante. Trabaja en todos los presses de pecho y de hombro.'},
+ delt_lat:{n:'Deltoides lateral',g:'hombros',v:'both',i:'La parte de fuera del hombro. Sube el brazo hacia el lado y es la que da anchura a los hombros.'},
+ delt_post:{n:'Deltoides posterior',g:'hombros',v:'back',i:'La parte trasera del hombro. Lleva el brazo hacia atrás. Muy importante para la postura y la salud del hombro.'},
+ trap_sup:{n:'Trapecio superior',g:'espalda',v:'both',i:'Entre el cuello y el hombro. Eleva los hombros, como al encogerlos.'},
+ trap_med:{n:'Trapecio medio e inferior',g:'espalda',v:'back',i:'El centro de la espalda alta. Junta y baja las escápulas; clave para una buena postura.'},
+ romboides:{n:'Romboides',g:'espalda',v:'back',i:'Entre las escápulas, debajo del trapecio. Junta las escápulas al hacer remos.'},
+ dorsal:{n:'Dorsal ancho',g:'espalda',v:'back',i:'El músculo más grande de la espalda. Lleva los brazos hacia abajo y atrás, y da la forma de "V".'},
+ erectores:{n:'Erectores (lumbares)',g:'espalda',v:'back',i:'Dos columnas a lo largo de la columna. Mantienen la espalda recta y la extienden.'},
+ biceps:{n:'Bíceps',g:'brazos',v:'front',i:'La parte delantera del brazo. Dobla el codo y gira la palma hacia arriba.'},
+ braquial:{n:'Braquial',g:'brazos',v:'front',i:'Debajo del bíceps. Es el flexor de codo más fuerte; se trabaja mucho con el curl martillo.'},
+ triceps:{n:'Tríceps',g:'brazos',v:'back',i:'La parte trasera del brazo, con tres cabezas. Estira el codo y es 2/3 del volumen del brazo.'},
+ ante_flex:{n:'Flexores del antebrazo',g:'brazos',v:'front',i:'La cara interna del antebrazo. Cierran la mano y doblan la muñeca: dan fuerza de agarre.'},
+ ante_ext:{n:'Extensores del antebrazo',g:'brazos',v:'both',i:'La cara externa del antebrazo. Abren la mano y estiran la muñeca; equilibran el agarre.'},
+ recto:{n:'Recto abdominal',g:'abdomen',v:'front',i:'La "tableta". Dobla el tronco hacia delante y estabiliza la columna.'},
+ oblicuos:{n:'Oblicuos',g:'abdomen',v:'front',i:'A los lados del abdomen. Giran e inclinan el tronco y evitan que se tuerza.'},
+ gluteo_may:{n:'Glúteo mayor',g:'gluteos',v:'back',i:'El músculo más grande del cuerpo. Extiende la cadera: levantarse, subir escaleras, saltar.'},
+ gluteo_med:{n:'Glúteo medio',g:'gluteos',v:'both',i:'En la parte alta y lateral de la cadera. Abre la pierna y estabiliza la cadera al caminar.'},
+ cuadriceps:{n:'Cuádriceps',g:'piernas',v:'front',i:'La parte delantera del muslo, con cuatro cabezas. Estira la rodilla.'},
+ aductores:{n:'Aductores',g:'piernas',v:'both',i:'La cara interna del muslo. Juntan las piernas y ayudan en sentadillas.'},
+ isquios:{n:'Isquiotibiales',g:'piernas',v:'back',i:'La parte trasera del muslo. Doblan la rodilla y extienden la cadera.'},
+ gemelos:{n:'Gemelos',g:'piernas',v:'back',i:'La parte alta de la pantorrilla. Te ponen de puntillas con la rodilla estirada.'},
+ soleo:{n:'Sóleo',g:'piernas',v:'back',i:'Debajo de los gemelos. Te pone de puntillas, sobre todo con la rodilla doblada.'},
+ tibial:{n:'Tibial anterior',g:'piernas',v:'front',i:'Delante de la espinilla. Levanta la punta del pie; ayuda a prevenir dolor de espinillas.'}
+};
+const MUSCLES=Object.fromEntries(Object.entries(MUS).map(([k,v])=>[k,v.n]));
+const GROUPS={pecho:'Pecho',hombros:'Hombros',espalda:'Espalda',brazos:'Brazos',abdomen:'Abdomen',gluteos:'Glúteos',piernas:'Piernas'};
+const inGroup=(k,g)=>MUS[k]&&MUS[k].g===g;
+
 
 const EX=[
 {id:'press-banca',n:'Press de banca',eq:'Barra',p:['pecho'],s:['triceps','hombros'],st:['Acuéstate en el banco con los pies firmes en el suelo y agarra la barra algo más ancho que los hombros.','Baja la barra controlada hasta rozar la parte media del pecho.','Empuja hacia arriba hasta extender los brazos sin bloquear los codos.'],t:'Junta las escápulas y mantenlas así durante toda la serie.'},
@@ -265,55 +314,184 @@ EX.push(
 {id:'rumano-manc',n:'Peso muerto rumano con mancuernas',eq:'Mancuernas',p:['isquios','gluteos'],s:['lumbar','antebrazos'],st:['De pie con una mancuerna en cada mano.','Lleva la cadera atrás bajando las mancuernas por delante de las piernas.','Sube apretando glúteos.'],t:'Espalda neutra todo el recorrido.'},
 {id:'puente-gluteo',n:'Puente de glúteos',eq:'Peso corporal',p:['gluteos'],s:['isquios'],st:['Acostado boca arriba con rodillas flexionadas.','Eleva la cadera apretando glúteos.','Baja lento.'],t:'Pausa 2 segundos arriba.'}
 );
+EX.push(
+{id:'talones-sentado',n:'Elevación de talones sentado',eq:'Máquina',st:['Siéntate con las rodillas bajo la almohadilla y la punta de los pies en la plataforma.','Sube los talones lo más alto que puedas.','Baja hasta estirar bien.'],t:'Con la rodilla doblada trabaja sobre todo el sóleo.'},
+{id:'abduccion',n:'Abducción de cadera',eq:'Máquina',st:['Siéntate con las almohadillas por fuera de las rodillas.','Abre las piernas empujando hacia fuera.','Cierra lento sin dejar caer el peso.'],t:'Inclinar el torso un poco hacia delante activa más el glúteo.'},
+{id:'elev-puntas',n:'Elevación de puntas',eq:'Peso corporal',st:['De pie, apoyado en la pared con los talones en el suelo.','Sube la punta de los pies hacia la espinilla.','Baja controlado.'],t:'Muy útil si corres o te duelen las espinillas.'}
+);
+// Muscles per exercise: p = principal, s = secundarios, e = estabilizadores
+const M3={
+'press-banca':[['pec_inf'],['pec_sup','delt_ant','triceps'],['serrato','recto']],
+'press-inclinado':[['pec_sup'],['delt_ant','triceps','pec_inf'],['serrato']],
+aperturas:[['pec_inf','pec_sup'],['delt_ant'],['biceps','serrato']],
+fondos:[['pec_inf','triceps'],['delt_ant'],['recto']],
+flexiones:[['pec_inf'],['triceps','delt_ant','pec_sup'],['recto','serrato','oblicuos']],
+'cruce-poleas':[['pec_inf'],['pec_sup','delt_ant'],['recto']],
+dominadas:[['dorsal'],['biceps','braquial','romboides','trap_med','delt_post'],['ante_flex','recto']],
+jalon:[['dorsal'],['biceps','braquial','romboides','trap_med'],['ante_flex']],
+'remo-barra':[['dorsal','romboides','trap_med'],['delt_post','biceps','braquial'],['erectores','isquios','ante_flex']],
+'remo-mancuerna':[['dorsal'],['romboides','trap_med','delt_post','biceps'],['oblicuos','ante_flex']],
+'remo-polea':[['romboides','trap_med','dorsal'],['delt_post','biceps'],['erectores']],
+'peso-muerto':[['gluteo_may','isquios','erectores'],['cuadriceps','aductores','trap_sup'],['ante_flex','recto','oblicuos','dorsal']],
+encogimientos:[['trap_sup'],[],['ante_flex']],
+'press-militar':[['delt_ant'],['delt_lat','triceps','trap_sup','serrato'],['recto','erectores','oblicuos']],
+laterales:[['delt_lat'],['delt_ant','trap_sup'],[]],
+pajaros:[['delt_post'],['romboides','trap_med'],['erectores']],
+'face-pull':[['delt_post'],['romboides','trap_med','trap_sup'],[]],
+'curl-barra':[['biceps'],['braquial','ante_flex'],['delt_ant']],
+'curl-martillo':[['braquial'],['biceps','ante_ext'],[]],
+'curl-concentrado':[['biceps'],['braquial'],[]],
+'triceps-polea':[['triceps'],[],['ante_flex','recto']],
+'press-frances':[['triceps'],[],['ante_flex']],
+'patada-triceps':[['triceps'],['delt_post'],['erectores']],
+'curl-muneca':[['ante_flex'],[],[]],
+sentadilla:[['cuadriceps','gluteo_may'],['aductores','isquios'],['erectores','recto','oblicuos']],
+prensa:[['cuadriceps'],['gluteo_may','aductores'],[]],
+zancadas:[['cuadriceps','gluteo_may'],['aductores','isquios'],['gluteo_med','gemelos','soleo']],
+'extension-cuad':[['cuadriceps'],[],[]],
+'curl-femoral':[['isquios'],['gemelos'],[]],
+'peso-muerto-rumano':[['isquios','gluteo_may'],['erectores','aductores'],['ante_flex','recto']],
+'hip-thrust':[['gluteo_may'],['isquios','gluteo_med','cuadriceps'],['recto']],
+'aductores-maq':[['aductores'],[],[]],
+talones:[['gemelos'],['soleo'],[]],
+bulgara:[['cuadriceps','gluteo_may'],['aductores'],['gluteo_med','oblicuos']],
+plancha:[['recto'],['oblicuos'],['delt_ant','gluteo_may','cuadriceps','serrato']],
+crunch:[['recto'],['oblicuos'],[]],
+'elev-piernas':[['recto'],['oblicuos'],['ante_flex','dorsal']],
+'russian-twist':[['oblicuos'],['recto'],['erectores']],
+hiperextensiones:[['erectores'],['gluteo_may','isquios'],[]],
+lenador:[['oblicuos'],['recto','delt_ant'],['erectores']],
+goblet:[['cuadriceps','gluteo_may'],['aductores'],['recto','erectores','ante_flex']],
+'sentadilla-libre':[['cuadriceps','gluteo_may'],['isquios','aductores'],['recto']],
+'press-hombro-manc':[['delt_ant'],['delt_lat','triceps','trap_sup'],['recto','serrato']],
+'rumano-manc':[['isquios','gluteo_may'],['erectores'],['ante_flex']],
+'puente-gluteo':[['gluteo_may'],['isquios','gluteo_med'],['recto']],
+'talones-sentado':[['soleo'],['gemelos'],[]],
+abduccion:[['gluteo_med'],[],[]],
+'elev-puntas':[['tibial'],[],[]]
+};
+const ERR={
+'press-banca':['Rebotar la barra en el pecho.','Despegar los glúteos del banco.','Abrir los codos a 90°: estresa el hombro.'],
+'press-inclinado':['Poner el banco demasiado vertical: pasa a ser press de hombro.','Chocar las mancuernas arriba y perder tensión.'],
+aperturas:['Estirar del todo los codos.','Bajar demasiado y forzar el hombro.'],
+fondos:['Bajar más de lo que el hombro aguanta.','Encoger los hombros hacia las orejas.'],
+flexiones:['Hundir o levantar la cadera.','Abrir los codos en "T".'],
+'cruce-poleas':['Doblar mucho los codos y convertirlo en un press.','Balancear el cuerpo.'],
+dominadas:['Hacer medias repeticiones.','Balancearse con las piernas.'],
+jalon:['Echarse muy atrás para mover más peso.','Llevar la barra detrás de la nuca.'],
+'remo-barra':['Redondear la espalda.','Levantar el torso en cada repetición.'],
+'remo-mancuerna':['Girar el torso para subir más peso.','Tirar con el brazo en vez de con el codo.'],
+'remo-polea':['Balancear el tronco atrás y adelante.','Encoger los hombros al tirar.'],
+'peso-muerto':['Redondear la zona lumbar.','Alejar la barra de las piernas.','Tirar con los brazos.'],
+encogimientos:['Girar los hombros en círculo.','Usar tanto peso que el recorrido es mínimo.'],
+'press-militar':['Arquear la espalda para empujar.','Bloquear los codos de golpe arriba.'],
+laterales:['Subir con impulso del cuerpo.','Subir las manos por encima de los hombros.'],
+pajaros:['Usar demasiado peso y tirar con la espalda.','Redondear la columna.'],
+'face-pull':['Tirar hacia el pecho en vez de hacia la cara.','Usar demasiado peso.'],
+'curl-barra':['Balancear el torso.','Adelantar los codos al subir.'],
+'curl-martillo':['Mover los codos.','Bajar de golpe.'],
+'curl-concentrado':['Ayudarse con el hombro.','No estirar del todo el brazo.'],
+'triceps-polea':['Separar los codos del cuerpo.','Inclinarse encima y empujar con el peso.'],
+'press-frances':['Abrir los codos.','Bajar demasiado rápido hacia la cara.'],
+'patada-triceps':['Dejar caer el codo.','Balancear el brazo.'],
+'curl-muneca':['Mover el antebrazo además de la muñeca.','Usar demasiado peso.'],
+sentadilla:['Juntar las rodillas al subir.','Levantar los talones.','Redondear la espalda abajo.'],
+prensa:['Despegar la zona lumbar del respaldo.','Bloquear las rodillas arriba.'],
+zancadas:['Dejar que la rodilla delantera se vaya hacia dentro.','Pasos demasiado cortos.'],
+'extension-cuad':['Subir con impulso.','Bajar de golpe.'],
+'curl-femoral':['Levantar la cadera del banco.','Recorrido incompleto.'],
+'peso-muerto-rumano':['Doblar demasiado las rodillas.','Redondear la espalda para bajar más.'],
+'hip-thrust':['Arquear la zona lumbar arriba.','Empujar con las puntas de los pies.'],
+'aductores-maq':['Cerrar de golpe.','Usar un rango más amplio del que tienes.'],
+talones:['Rebotar abajo.','Recorrido corto.'],
+bulgara:['Pie delantero demasiado cerca del banco.','Perder el equilibrio por ir rápido.'],
+plancha:['Hundir la cadera.','Aguantar la respiración.'],
+crunch:['Tirar del cuello con las manos.','Subir con impulso.'],
+'elev-piernas':['Balancearse.','Subir solo las piernas sin enrollar la pelvis.'],
+'russian-twist':['Girar solo los brazos.','Redondear la espalda.'],
+hiperextensiones:['Subir más allá de la línea del cuerpo.','Hacerlo rápido y con rebote.'],
+lenador:['Girar con los brazos en vez del tronco.','Bloquear las rodillas.'],
+goblet:['Dejar caer el pecho hacia delante.','Juntar las rodillas.'],
+'sentadilla-libre':['Ir demasiado rápido.','Levantar los talones.'],
+'press-hombro-manc':['Arquear la espalda.','Bajar poco las mancuernas.'],
+'rumano-manc':['Alejar las mancuernas de las piernas.','Redondear la espalda.'],
+'puente-gluteo':['Arquear la zona lumbar.','No apretar el glúteo arriba.'],
+'talones-sentado':['Rebotar abajo.','Recorrido corto.'],
+abduccion:['Cerrar de golpe.','Usar impulso.'],
+'elev-puntas':['Mover las rodillas.','Hacerlo demasiado rápido.']
+};
+EX.forEach(e=>{const m=M3[e.id];e.p=m[0];e.s=m[1];e.e=m[2];e.er=ERR[e.id]||[]});
 // Movement type (k) for the routine generator; adv = for intermediate+; bw = can be done without equipment
-const KIND={'press-banca':'chest','press-inclinado':'chest',aperturas:'chestiso',fondos:'chest',flexiones:'chest','cruce-poleas':'chestiso',dominadas:'pullv',jalon:'pullv','remo-barra':'pullh','remo-mancuerna':'pullh','remo-polea':'pullh','peso-muerto':'hinge',encogimientos:'trap','press-militar':'pushv',laterales:'delt',pajaros:'delt','face-pull':'delt','curl-barra':'biceps','curl-martillo':'biceps','curl-concentrado':'biceps','triceps-polea':'tri','press-frances':'tri','patada-triceps':'tri','curl-muneca':'forearm',sentadilla:'squat',prensa:'squat',zancadas:'lunge','extension-cuad':'quadiso','curl-femoral':'hamiso','peso-muerto-rumano':'hinge','hip-thrust':'glute','aductores-maq':'adductor',talones:'calf',bulgara:'lunge',plancha:'core',crunch:'core','elev-piernas':'core','russian-twist':'core',hiperextensiones:'hinge',lenador:'core',goblet:'squat','sentadilla-libre':'squat','press-hombro-manc':'pushv','rumano-manc':'hinge','puente-gluteo':'glute'};
+const KIND={'press-banca':'chest','press-inclinado':'chest',aperturas:'chestiso',fondos:'chest',flexiones:'chest','cruce-poleas':'chestiso',dominadas:'pullv',jalon:'pullv','remo-barra':'pullh','remo-mancuerna':'pullh','remo-polea':'pullh','peso-muerto':'hinge',encogimientos:'trap','press-militar':'pushv',laterales:'delt',pajaros:'delt','face-pull':'delt','curl-barra':'biceps','curl-martillo':'biceps','curl-concentrado':'biceps','triceps-polea':'tri','press-frances':'tri','patada-triceps':'tri','curl-muneca':'forearm',sentadilla:'squat',prensa:'squat',zancadas:'lunge','extension-cuad':'quadiso','curl-femoral':'hamiso','peso-muerto-rumano':'hinge','hip-thrust':'glute','aductores-maq':'adductor',talones:'calf',bulgara:'lunge',plancha:'core',crunch:'core','elev-piernas':'core','russian-twist':'core',hiperextensiones:'hinge',lenador:'core',goblet:'squat','sentadilla-libre':'squat','press-hombro-manc':'pushv','rumano-manc':'hinge','puente-gluteo':'glute','talones-sentado':'calf',abduccion:'abd','elev-puntas':'tibial'};
 const ADV=['peso-muerto','dominadas','fondos','elev-piernas','bulgara','press-frances','remo-barra'];
 const BW=['zancadas','bulgara','talones'];
 EX.forEach(e=>{e.k=KIND[e.id];e.adv=ADV.includes(e.id);e.bw=BW.includes(e.id)});
 const EXMAP=Object.fromEntries(EX.map(e=>[e.id,e]));
 
-/* ---------- Body map ---------- */
-function mE(cx,cy,rx,ry){return [`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/>`,`<ellipse cx="${100-cx}" cy="${cy}" rx="${rx}" ry="${ry}"/>`]}
-function mP(d){return [`<path d="${d}"/>`,`<path d="${d}" transform="translate(100,0) scale(-1,1)"/>`]}
+/* ---------- Body map (26 muscles) ---------- */
+const mir=s=>[s,s.replace(/^<(\w+)/,'<$1 transform="translate(100,0) scale(-1,1)"')];
+const P=d=>mir(`<path d="${d}"/>`);
+const E=(cx,cy,rx,ry,rot=0)=>mir(`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"${rot?` transform="rotate(${rot} ${cx} ${cy})"`:''}/>`);
 const BASE=[
- '<circle cx="50" cy="13" r="8.5"/>','<rect x="45.5" y="19" width="9" height="9" rx="2"/>',
- '<path d="M33 30 Q50 26 67 30 L66 60 Q64 80 63 92 L37 92 Q36 80 34 60 Z"/>',
- '<path d="M37 89 L63 89 Q67 100 64 107 L50 111 L36 107 Q33 100 37 89Z"/>',
- ...mE(21.5,92,3.6,4.2),...mE(42,146,5.6,5.2),...mE(41.6,168,5,17),...mE(41,189,5.2,3.2)
+ '<ellipse cx="50" cy="12" rx="7.2" ry="8.6"/>','<rect x="45.5" y="18" width="9" height="10" rx="2"/>',
+ '<path d="M37 27 Q50 24 63 27 L66.5 34 Q66 58 64 70 Q63 80 64 88 L36 88 Q37 80 36 70 Q34 58 33.5 34 Z"/>',
+ '<path d="M36 86 L64 86 Q67.5 96 64.5 104 L50 110 L35.5 104 Q32.5 96 36 86 Z"/>',
+ ...E(30,48,5.2,15,8),...E(26.2,73,4.4,12.5,6),...E(24,91,3.3,4.6),
+ ...P('M35.6 98 Q34.6 120 38.3 141 L46.6 141 Q49.6 120 49.6 104 Z'),...E(42.4,144,4.7,4.6),
+ ...P('M38 146 Q36.8 160 39.5 178 L44.8 178 Q47.6 160 47 146 Z'),...E(42.2,182.5,4.8,3)
 ];
 const SHAPES={
  front:{
-  hombros:mE(30.5,35,7,6.5),
-  pecho:mP('M37 32.5 Q44 30.5 49.3 33 L49.3 46 Q43 49.5 36.5 45 Q35 38 37 32.5Z'),
-  biceps:mE(27,52,4.6,10),
-  antebrazos:mE(23.6,76,4,12),
-  abdomen:['<rect x="43.6" y="50" width="12.8" height="36" rx="4"/>'],
-  oblicuos:mP('M36.5 50 L42 52 L42 84 L38.3 84 Q36 68 36.5 50Z'),
-  cuadriceps:mE(42,124,7.4,20),
-  aductores:mP('M47.3 108 L49.4 110 L49.4 134 Q47 127 46 118Z')
+  trap_sup:P('M45.3 22 L45.8 28.4 L38.5 29.6 Z'),
+  delt_ant:P('M38.6 29.4 Q32.6 29.2 31 34.6 Q31 40.5 33.6 43.6 L37.6 36.4 Z'),
+  delt_lat:P('M30.4 32.6 Q26.8 36.6 27.6 45.4 L31 46.2 Q30.2 39.6 32.6 34.4 Z'),
+  pec_sup:P('M49.3 29.8 L39.2 30.6 L37.4 36.8 L49.3 37.8 Z'),
+  pec_inf:P('M49.3 38.6 L37.3 37.6 Q36.6 44 39.4 47.4 Q45 50.4 49.3 47.6 Z'),
+  serrato:P('M35.9 48 L39.7 48.6 L40.1 55.6 L36.4 54.4 Z'),
+  biceps:E(31.3,54.4,3.3,7.6,8),
+  braquial:E(28.4,58.8,1.7,4.6,8),
+  ante_flex:E(27.4,73.6,3,10.4,6),
+  ante_ext:E(23.9,71.4,1.8,8,6),
+  recto:['<rect x="43.8" y="50.4" width="12.4" height="35.6" rx="3.5"/>'],
+  oblicuos:P('M36.9 52.6 L42.9 51.6 L42.9 84.6 L39 82.8 Q36.9 68 36.9 52.6 Z'),
+  gluteo_med:P('M36.2 87.4 L40.4 86.6 L38.8 96.6 L35.4 95.4 Z'),
+  cuadriceps:P('M38.6 97.6 Q36 114 38.2 132.6 L43.8 137.6 L47.6 131.4 L47.2 106 L43.4 98.6 Z'),
+  aductores:P('M47.9 101.4 L49.4 103.4 L49.4 124 L48.2 127.6 Q47.2 112 47.9 101.4 Z'),
+  tibial:E(40.4,160,2.4,12.4,-2),
+  gemelos:E(45.3,155.6,2.1,8.6,2)
  },
  back:{
-  trapecio:['<polygon points="50,20.5 61.5,30 56,50 50,56 44,50 38.5,30"/>'],
-  hombros:mE(30.5,35,7,6.5),
-  dorsales:mP('M38 40 L46 48 L48 70 Q42 70 37.6 62 Q36 50 38 40Z'),
-  triceps:mE(27,52,4.6,10),
-  antebrazos:mE(23.6,76,4,12),
-  lumbar:['<rect x="44.6" y="60" width="10.8" height="25" rx="3"/>'],
-  gluteos:mE(43,99,7.4,8.6),
-  isquios:mE(42,127,6.8,17),
-  gemelos:mE(41.6,164,5.2,12)
+  trap_sup:P('M50 19.6 L56.6 25.6 L62.4 29.8 L50 31 Z'),
+  dorsal:P('M38.2 40 L47.6 49.6 L49.3 70.6 Q42.4 72.4 37.7 63.4 Q36 50.6 38.2 40 Z'),
+  trap_med:P('M50 31.4 L61.4 30.8 L56.2 37.6 L52.8 46.4 L50 58.4 Z'),
+  romboides:P('M50.6 34 L55.6 35 L52.7 44 L50.6 45.2 Z'),
+  delt_post:P('M38.6 29.4 Q32.6 29.2 31 34.6 Q31 40.5 33.6 43.6 L37.6 36.4 Z'),
+  delt_lat:P('M30.4 32.6 Q26.8 36.6 27.6 45.4 L31 46.2 Q30.2 39.6 32.6 34.4 Z'),
+  triceps:E(30.6,54,3.8,8.8,8),
+  ante_ext:E(26.4,73.4,3.4,10.6,6),
+  erectores:P('M46.8 58.4 L49.4 58.4 L49.4 87.6 L45.8 87.6 Q45.3 72 46.8 58.4 Z'),
+  gluteo_med:P('M36.2 86.4 L46.4 84.8 L44.4 92 L36.4 93.2 Z'),
+  gluteo_may:E(43,100,7.2,8.6),
+  isquios:P('M37.9 110 Q37 126 39 138.6 L44 140.4 L47.6 134 L48 114 L45 108.4 Z'),
+  aductores:P('M48 111 L49.4 113 L49.4 128 L48.3 130.2 Z'),
+  gemelos:E(42.3,155,4.8,9.6),
+  soleo:P('M38.6 161.4 Q39.4 171 41 176.4 L44.2 176.4 Q46 170 46.4 161.4 Q42.6 167.4 38.6 161.4 Z')
  }
 };
-function bodySVG(side,prim=[],sec=[],interactive=false,small=false){
-  let out=`<svg viewBox="0 0 100 196" aria-hidden="${small}" role="${small?'presentation':'group'}" ${small?'':`aria-label="Cuerpo, vista de ${side==='front'?'frente':'espalda'}"`}><g class="b">${BASE.join('')}</g>`;
+function bodySVG(side,prim=[],sec=[],interactive=false,small=false,stab=[],heat=null,sel=null){
+  let out=`<svg viewBox="0 0 100 188" ${small?'aria-hidden="true"':`role="group" aria-label="Cuerpo, vista de ${side==='front'?'frente':'espalda'}"`}><g class="b">${BASE.join('')}</g>`;
   for(const [k,shapes] of Object.entries(SHAPES[side])){
-    const c=prim.includes(k)?'p':sec.includes(k)?'s':'';
-    const attrs=interactive?` class="m hit ${c}" tabindex="0" role="button" data-muscle="${k}" aria-label="${MUSCLES[k]}" aria-pressed="${c==='p'}"`:` class="m ${c}"`;
+    let c=prim.includes(k)?'p':sec.includes(k)?'s':stab.includes(k)?'e':'';
+    if(heat){const h=heat[k]||0;c=h>=10?'h3':h>=5?'h2':h>0?'h1':''}
+    if(sel&&sel.includes(k))c+=' sel';
+    const attrs=interactive?` class="m hit ${c}" tabindex="0" role="button" data-muscle="${k}" aria-label="${MUSCLES[k]}" aria-pressed="${!!(sel&&sel.includes(k))}"`:` class="m ${c}"`;
     out+=`<g${attrs}>${shapes.join('')}${interactive?`<title>${MUSCLES[k]}</title>`:''}</g>`;
   }
   return out+'</svg>';
 }
-const sideOf=k=>Object.keys(SHAPES.front).includes(k)&&!Object.keys(SHAPES.back).includes(k)?'front':Object.keys(SHAPES.back).includes(k)&&!Object.keys(SHAPES.front).includes(k)?'back':'front';
+const sideOf=k=>MUS[k]&&MUS[k].v==='back'?'back':'front';
+const bothMaps=(p,s,e,opts={})=>`<div class="maps"><div class="map">${bodySVG('front',p,s,!!opts.interactive,false,e,opts.heat,opts.sel)}<span>Frente</span></div><div class="map">${bodySVG('back',p,s,!!opts.interactive,false,e,opts.heat,opts.sel)}<span>Espalda</span></div></div>`;
+const LEG3=`<div class="legend"><span><i style="background:var(--muscle)"></i>Principal</span><span><i style="background:var(--muscle2)"></i>Secundario</span><span><i style="background:var(--muscle3)"></i>Estabilizador</span></div>`;
 
 /* ---------- Exercise animations (schematic figure) ---------- */
 const SIDE=[['nk','hp','to'],['hp','kn','th'],['kn','an','sn'],['an','ft','ft'],['nk','el','ua'],['el','ha','la']];
@@ -349,6 +527,8 @@ const PAT={
  legcurl:{v:'s',A:{hd:[40,90],nk:[54,96],hp:[104,96],kn:[144,96],an:[176,96],ft:[180,88],el:[42,104],ha:[34,112]},B:{an:[138,64],ft:[130,60]},props:P=>bench(36,100,112)+`<circle cx="${P.an[0]}" cy="${P.an[1]-5}" r="5" fill="var(--prop)"/>`},
  lunge:{v:'s',extra:[['hp','kn2','th'],['kn2','an2','sn'],['an2','ft2','ft']],A:{hd:[100,22],nk:[100,38],hp:[100,82],kn:[116,108],an:[122,138],ft:[132,140],kn2:[90,110],an2:[80,136],ft2:[72,140],el:[100,60],ha:[100,80]},B:{hd:[100,44],nk:[100,60],hp:[100,104],kn:[126,112],kn2:[98,134],an2:[72,134],ft2:[64,140],el:[100,82],ha:[100,102]}},
  hipthrust:{v:'s',A:{hd:[46,82],nk:[60,92],hp:[96,124],kn:[128,106],an:[134,138],ft:[144,140],el:[78,112],ha:[96,118]},B:{hd:[48,84],nk:[62,92],hp:[98,92],kn:[130,94],el:[80,94],ha:[98,86]},props:()=>bench(22,96,40)},
+ abductor:{v:'f',A:{hd:[100,30],nk:[100,46],hp:[100,88],sL:[86,50],sR:[114,50],eL:[80,70],hL:[84,88],eR:[120,70],hR:[116,88],pL:[92,90],pR:[108,90],kL:[92,108],aL:[92,138],kR:[108,108],aR:[108,138]},B:{kL:[62,104],aL:[58,134],kR:[138,104],aR:[142,134]},props:()=>`<rect x="82" y="92" width="36" height="6" rx="2" fill="var(--prop)"/>`},
+ toeraise:{v:'s',A:{...SB},B:{ft:[108,128]},props:()=>`<line x1="84" y1="0" x2="84" y2="141" stroke="var(--prop)" stroke-width="4"/>`},
  glutebridge:{v:'s',A:{hd:[44,132],nk:[60,134],hp:[100,134],kn:[128,108],an:[136,138],ft:[146,140],el:[80,140],ha:[98,140]},B:{nk:[60,132],hp:[100,106],kn:[130,104],el:[80,138],ha:[98,138]}},
  calf:{v:'s',A:{...SB},B:{hd:[100,15],nk:[100,31],hp:[100,75],kn:[100,103],an:[100,131],el:[100,53],ha:[100,73]},props:()=>`<rect x="104" y="141" width="30" height="6" fill="var(--prop)"/>`},
  plank:{v:'s',dur:3200,A:{hd:[52,110],nk:[66,116],hp:[118,120],kn:[146,126],an:[172,132],ft:[178,140],el:[68,140],ha:[88,140]},B:{hp:[118,123],hd:[52,111]}},
@@ -360,14 +540,14 @@ const PAT={
  twist:{v:'f',A:{hp:[100,104],pL:[92,104],pR:[108,104],kL:[80,86],aL:[70,112],kR:[120,86],aR:[130,112],hd:[84,42],nk:[90,58],sL:[78,62],sR:[102,56],eL:[74,80],hL:[72,96],eR:[92,80],hR:[78,96]},B:{hd:[116,42],nk:[110,58],sL:[98,56],sR:[122,62],eL:[108,80],hL:[122,96],eR:[126,80],hR:[128,96]}},
  woodchop:{v:'f',A:{...FB,nk:[104,36],hd:[106,20],sL:[90,38],sR:[118,42],eL:[118,22],hL:[140,8],eR:[130,30],hR:[144,10]},B:{nk:[96,38],hd:[94,22],sL:[84,42],sR:[110,38],eL:[80,64],hL:[66,88],eR:[84,66],hR:[70,90]},cable:[[192,-16]]}
 };
-const EXPAT={'press-banca':'bench','press-inclinado':'bench',aperturas:'fly',fondos:'dip',flexiones:'pushup','cruce-poleas':'cablefly',dominadas:'pullup',jalon:'pulldown','remo-barra':'rowbent','remo-mancuerna':'rowbent','remo-polea':'rowseat','peso-muerto':'deadlift',encogimientos:'shrug','press-militar':'ohp',laterales:'lateral',pajaros:'lateral','face-pull':'facepull','curl-barra':'curl','curl-martillo':'curl','curl-concentrado':'curl','triceps-polea':'pushdown','press-frances':'skull','patada-triceps':'kickback','curl-muneca':'wrist',sentadilla:'squat',prensa:'legpress',zancadas:'lunge','extension-cuad':'legext','curl-femoral':'legcurl','peso-muerto-rumano':'deadlift','hip-thrust':'hipthrust','aductores-maq':'adductor',talones:'calf',bulgara:'lunge',plancha:'plank',crunch:'crunch','elev-piernas':'hangleg','russian-twist':'twist',hiperextensiones:'hinge',lenador:'woodchop',goblet:'squat','sentadilla-libre':'squat','press-hombro-manc':'ohp','rumano-manc':'deadlift','puente-gluteo':'glutebridge'};
-const PART={to:['pecho','dorsales','abdomen','oblicuos','lumbar','trapecio'],ua:['biceps','triceps'],la:['antebrazos'],th:['cuadriceps','isquios','gluteos','aductores'],sn:['gemelos'],ft:[]};
+const EXPAT={'press-banca':'bench','press-inclinado':'bench',aperturas:'fly',fondos:'dip',flexiones:'pushup','cruce-poleas':'cablefly',dominadas:'pullup',jalon:'pulldown','remo-barra':'rowbent','remo-mancuerna':'rowbent','remo-polea':'rowseat','peso-muerto':'deadlift',encogimientos:'shrug','press-militar':'ohp',laterales:'lateral',pajaros:'lateral','face-pull':'facepull','curl-barra':'curl','curl-martillo':'curl','curl-concentrado':'curl','triceps-polea':'pushdown','press-frances':'skull','patada-triceps':'kickback','curl-muneca':'wrist',sentadilla:'squat',prensa:'legpress',zancadas:'lunge','extension-cuad':'legext','curl-femoral':'legcurl','peso-muerto-rumano':'deadlift','hip-thrust':'hipthrust','aductores-maq':'adductor',talones:'calf',bulgara:'lunge',plancha:'plank',crunch:'crunch','elev-piernas':'hangleg','russian-twist':'twist',hiperextensiones:'hinge',lenador:'woodchop',goblet:'squat','sentadilla-libre':'squat','press-hombro-manc':'ohp','rumano-manc':'deadlift','puente-gluteo':'glutebridge','talones-sentado':'calf',abduccion:'abductor','elev-puntas':'toeraise'};
+const PART={to:['pec_sup','pec_inf','serrato','dorsal','recto','oblicuos','erectores','trap_sup','trap_med','romboides'],ua:['biceps','braquial','triceps'],la:['ante_flex','ante_ext'],th:['cuadriceps','isquios','gluteo_may','gluteo_med','aductores'],sn:['gemelos','soleo','tibial'],ft:['tibial']};
 const W={to:13,ua:8,la:7,th:10,sn:8,ft:5};
 function figSVG(ex,t){
   const pat=PAT[EXPAT[ex.id]];
   const P={};for(const k in pat.A){const a=pat.A[k],b=(pat.B[k]||a);P[k]=[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]}
-  const col=part=>PART[part].some(k=>ex.p.includes(k))?'var(--muscle)':PART[part].some(k=>ex.s.includes(k))?'var(--muscle2)':'var(--fig)';
-  const jcol=k=>ex.p.includes(k)?'var(--muscle)':ex.s.includes(k)?'var(--muscle2)':null;
+  const lv=ks=>ks.some(k=>ex.p.includes(k))?'var(--muscle)':ks.some(k=>ex.s.includes(k))?'var(--muscle2)':ks.some(k=>ex.e.includes(k))?'var(--muscle3)':null;
+  const col=part=>lv(PART[part])||'var(--fig)';
   let o=`<svg viewBox="0 -22 200 168" role="img" aria-label="Animación de ${esc(ex.n)}"><line x1="6" y1="141" x2="194" y2="141" stroke="var(--line)" stroke-width="2"/>`;
   if(pat.props) o+=pat.props(P);
   const hands=pat.v==='f'?['hL','hR']:[pat.hand||'ha'];
@@ -377,7 +557,7 @@ function figSVG(ex,t){
   segs.slice().sort((a,b)=>order.indexOf(a[2])-order.indexOf(b[2])).forEach(([a,b,part])=>{
     o+=`<line x1="${P[a][0].toFixed(1)}" y1="${P[a][1].toFixed(1)}" x2="${P[b][0].toFixed(1)}" y2="${P[b][1].toFixed(1)}" stroke="${col(part)}" stroke-width="${W[part]}" stroke-linecap="round"/>`});
   const sh=pat.v==='f'?['sL','sR']:['nk'],hp=pat.v==='f'?['pL','pR']:['hp'];
-  const cs=jcol('hombros'),cg=jcol('gluteos');
+  const cs=lv(['delt_ant','delt_lat','delt_post']),cg=lv(['gluteo_may','gluteo_med']);
   if(cs) sh.forEach(k=>o+=`<circle cx="${P[k][0]}" cy="${P[k][1]}" r="6.5" fill="${cs}"/>`);
   if(cg) hp.forEach(k=>o+=`<circle cx="${P[k][0]}" cy="${P[k][1]}" r="7.5" fill="${cg}"/>`);
   o+=`<circle cx="${P.hd[0]}" cy="${P.hd[1]}" r="9" fill="var(--fig)"/>`;
@@ -475,20 +655,6 @@ function lastWeight(exId){const h=history(exId);if(!h.length)return'';const s=h[
 const fmtDate=t=>new Date(t).toLocaleDateString('es',{day:'numeric',month:'short'});
 
 /* ---------- Helpers ---------- */
-function filtered(){
-  const q=S.q.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-  return EX.filter(e=>{
-    if(S.muscle && !e.p.includes(S.muscle) && !e.s.includes(S.muscle)) return false;
-    if(!q) return true;
-    const hay=(e.n+' '+e.eq+' '+e.p.concat(e.s).map(k=>MUSCLES[k]).join(' ')).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-    return hay.includes(q);
-  }).sort((a,b)=>S.muscle?(b.p.includes(S.muscle)-a.p.includes(S.muscle)):0);
-}
-function coverage(r){
-  const p=new Set(),s=new Set();
-  r.items.forEach(i=>{const e=EXMAP[i.ex];if(!e)return;e.p.forEach(k=>p.add(k));e.s.forEach(k=>s.add(k))});
-  p.forEach(k=>s.delete(k));return{p:[...p],s:[...s]};
-}
 function sortedRoutines(){return Object.values(S.routines).sort((a,b)=>(b.updated||0)-(a.updated||0))}
 function newId(){return 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function touch(r){r.updated=Date.now();persist(r.id)}
@@ -507,22 +673,36 @@ function stopAnimIfNoSheet(){if(!$('#sheet').classList.contains('open'))stopAnim
 const DAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],DAYL=['L','M','X','J','V','S','D'];
 const todayIdx=()=>(new Date().getDay()+6)%7;
 const daysTxt=r=>(r.days||[]).slice().sort().map(d=>DAYS[d]).join(', ');
+function selKeys(){if(!S.muscle)return[];if(S.muscle.startsWith('g:')){const g=S.muscle.slice(2);return Object.keys(MUS).filter(k=>inGroup(k,g))}return[S.muscle]}
+function selName(){if(!S.muscle)return'';return S.muscle.startsWith('g:')?GROUPS[S.muscle.slice(2)]:MUSCLES[S.muscle]}
+const norm=t=>t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+function filtered(){
+  const q=norm(S.q.trim()),ks=selKeys();
+  const hits=(e,arr)=>ks.some(k=>arr.includes(k));
+  return EX.filter(e=>{
+    if(ks.length && !hits(e,e.p) && !hits(e,e.s)) return false;
+    if(!q) return true;
+    return norm(e.n+' '+e.eq+' '+e.p.concat(e.s).map(k=>MUSCLES[k]).join(' ')+' '+e.p.concat(e.s).map(k=>GROUPS[MUS[k].g]).join(' ')).includes(q);
+  }).sort((a,b)=>ks.length?(hits(b,b.p)-hits(a,a.p)):0);
+}
+function coverage(r){
+  const p=new Set(),s=new Set(),e=new Set();
+  r.items.forEach(i=>{const x=EXMAP[i.ex];if(!x)return;x.p.forEach(k=>p.add(k));x.s.forEach(k=>s.add(k));x.e.forEach(k=>e.add(k))});
+  p.forEach(k=>{s.delete(k);e.delete(k)});s.forEach(k=>e.delete(k));return{p:[...p],s:[...s],e:[...e]};
+}
 function renderEx(){
-  const list=filtered();
-  const sel=S.muscle?[S.muscle]:[];
+  const list=filtered(),ks=selKeys(),isM=S.muscle&&!S.muscle.startsWith('g:');
   app.innerHTML=`
-  <header class="top"><h1>Gym Mapa</h1><p class="save-note">${list.length===EX.length?EX.length+' ejercicios':''}</p></header>
+  <header class="top"><h1>Gym Mapa</h1><p class="save-note">${EX.length} ejercicios · ${Object.keys(MUS).length} músculos</p></header>
   <div class="plate">
-    <div class="maps">
-      <div class="map">${bodySVG('front',sel,[],true)}<span>Frente</span></div>
-      <div class="map">${bodySVG('back',sel,[],true)}<span>Espalda</span></div>
-    </div>
-    <p class="hint">${S.muscle?`Mostrando ejercicios de <b>${MUSCLES[S.muscle]}</b>`:'Toca un músculo para ver sus ejercicios'}</p>
+    ${bothMaps([],[],[],{interactive:true,sel:ks})}
+    <p class="hint">${S.muscle?`Ejercicios de <b>${esc(selName())}</b>${isM?` · <button class="linkbtn" data-msheet="${S.muscle}">Ver ficha del músculo</button>`:''}`:'Toca un músculo para ver sus ejercicios'}</p>
   </div>
-  <div class="chips" role="group" aria-label="Filtrar por músculo">
+  <div class="chips" role="group" aria-label="Filtrar por zona">
     <button class="chip" data-chip="" aria-pressed="${!S.muscle}">Todos</button>
-    ${Object.entries(MUSCLES).map(([k,v])=>`<button class="chip" data-chip="${k}" aria-pressed="${S.muscle===k}">${v}</button>`).join('')}
+    ${Object.entries(GROUPS).map(([k,v])=>`<button class="chip" data-chip="g:${k}" aria-pressed="${S.muscle==='g:'+k||(isM&&MUS[S.muscle].g===k)}">${v}</button>`).join('')}
   </div>
+  ${S.muscle?`<div class="chips" role="group" aria-label="Músculos de la zona" style="padding-top:6px">${Object.keys(MUS).filter(k=>MUS[k].g===(isM?MUS[S.muscle].g:S.muscle.slice(2))).map(k=>`<button class="chip" data-chip="${k}" aria-pressed="${S.muscle===k}">${MUS[k].n}</button>`).join('')}</div>`:''}
   <input class="search" id="q" type="search" placeholder="Buscar ejercicio, músculo o equipo" value="${esc(S.q)}" aria-label="Buscar ejercicio">
   <p class="count" id="count">${list.length} ${list.length===1?'ejercicio':'ejercicios'}</p>
   <div class="list" id="exlist">${exRows(list)}</div>`;
@@ -531,7 +711,7 @@ function renderEx(){
 function exRows(list){
   if(!list.length) return `<p class="empty">No hay ejercicios con ese filtro. Prueba con otro músculo o borra la búsqueda.</p>`;
   return list.map(e=>`<button class="row" data-ex="${e.id}">
-    <span class="dot">${bodySVG(sideOf(e.p[0]),e.p,e.s,false,true)}</span>
+    <span class="dot">${bodySVG(sideOf(e.p[0]),e.p,e.s,false,true,e.e)}</span>
     <span><b>${esc(e.n)}</b><small>${e.p.map(k=>MUSCLES[k]).join(', ')} · ${esc(e.eq)}</small></span>
     <span class="chev" aria-hidden="true">›</span></button>`).join('');
 }
@@ -551,10 +731,12 @@ function renderRoutines(){
   <div class="week" aria-label="Tu semana">${DAYL.map((l,i)=>`<div class="wd ${i===td?'today':''} ${rs.some(r=>(r.days||[]).includes(i))?'has':''}" title="${DAYS[i]}">${l}</div>`).join('')}</div>
   ${card}
   <div class="btns"><button class="btn" data-act="gen">Generar rutina</button><button class="btn ghost" data-act="new">+ Crear a mano</button></div>
+  <h3 class="sec-title" style="font-size:24px">Tus rutinas</h3>
   ${rs.length?rs.map(r=>{const c=coverage(r);const dt=daysTxt(r);return `<button class="rcard" data-open="${r.id}">
-     <span class="mini">${bodySVG('front',c.p,c.s,false,true)}${bodySVG('back',c.p,c.s,false,true)}</span>
+     <span class="mini">${bodySVG('front',c.p,c.s,false,true,c.e)}${bodySVG('back',c.p,c.s,false,true,c.e)}</span>
      <span><b>${esc(r.name||'Rutina sin nombre')}</b><small>${dt?dt+' · ':''}${r.items.length} ${r.items.length===1?'ejercicio':'ejercicios'}</small></span></button>`}).join('')
-   :`<div class="empty" style="background:var(--paper);border-radius:var(--r-m);margin-top:12px">Aún no tienes rutinas. Genera una respondiendo unas preguntas o créala a mano.</div>`}`;
+   :`<div class="empty" style="background:var(--paper);border-radius:var(--r-m);margin-top:12px">Aún no tienes rutinas. Genera una respondiendo unas preguntas o créala a mano.</div>`}
+  ${weekCard()}`;
 }
 function estMin(r){let s=0;r.items.forEach(it=>{const n=parseInt(it.sets)||3;s+=n*(45+(parseInt(it.rest)||60))});return Math.max(5,Math.round(s/60/5)*5)}
 function renderEditor(){
@@ -566,11 +748,7 @@ function renderEditor(){
   <div class="daypick" role="group" aria-label="Días">${DAYS.map((d,i)=>`<button data-rday="${i}" aria-pressed="${r.days.includes(i)}">${d}</button>`).join('')}</div>
   ${r.items.length?`<button class="btn" data-start="${r.id}">Empezar entrenamiento</button>`:''}
   <div class="plate">
-    <div class="maps">
-      <div class="map">${bodySVG('front',c.p,c.s)}<span>Frente</span></div>
-      <div class="map">${bodySVG('back',c.p,c.s)}<span>Espalda</span></div>
-    </div>
-    <div class="legend"><span><i style="background:var(--muscle)"></i>Principal</span><span><i style="background:var(--muscle2)"></i>Secundario</span></div>
+    ${bothMaps(c.p,c.s,c.e)}${LEG3}
   </div>
   ${r.items.length?`<p class="count">${r.items.length} ejercicios · unos ${estMin(r)} min</p>`:`<p class="empty">Esta rutina está vacía. Añade tu primer ejercicio.</p>`}
   <div id="items">${r.items.map((it,i)=>{const e=EXMAP[it.ex]; if(!e) return ''; return `<div class="item" data-i="${i}">
@@ -672,10 +850,10 @@ const TPL={
  pull:['pullv','pullh','pullh','delt','biceps','biceps','trap','core'],
  legs:['squat','hinge','lunge','quadiso','hamiso','glute','calf','core']
 };
-const ALLOWED={full:Object.keys(TPL).flatMap(k=>TPL[k]),upper:TPL.upper,lower:TPL.lower.concat('adductor'),push:TPL.push,pull:TPL.pull.concat('forearm'),legs:TPL.legs.concat('adductor')};
+const ALLOWED={full:Object.keys(TPL).flatMap(k=>TPL[k]),upper:TPL.upper,lower:TPL.lower.concat('adductor','abd'),push:TPL.push,pull:TPL.pull.concat('forearm'),legs:TPL.legs.concat('adductor','abd')};
 const TNAME={full:'Cuerpo completo',upper:'Torso',lower:'Pierna',push:'Empuje',pull:'Tirón',legs:'Pierna'};
 const SPLIT={1:['full'],2:['full','full'],3:['full','full','full'],4:['upper','lower','upper','lower'],5:['push','pull','legs','upper','lower'],6:['push','pull','legs','push','pull','legs'],7:['push','pull','legs','push','pull','legs','full']};
-const FOCUS={pecho:['chestiso'],espalda:['pullh'],hombros:['delt'],brazos:['biceps','tri'],piernas:['quadiso','hamiso'],gluteos:['glute'],abdomen:['core']};
+const FOCUS={pecho:['chestiso'],espalda:['pullh'],hombros:['delt'],brazos:['biceps','tri'],piernas:['quadiso','hamiso'],gluteos:['glute','abd'],abdomen:['core']};
 const FOCUSL={pecho:'Pecho',espalda:'Espalda',hombros:'Hombros',brazos:'Brazos',piernas:'Piernas',gluteos:'Glúteos',abdomen:'Abdomen'};
 const COMPOUND=['squat','hinge','chest','pullh','pullv','pushv','lunge'];
 const COUNT={30:4,45:5,60:6,90:8};
@@ -761,20 +939,51 @@ function histHTML(exId){
 /* ---------- Sheets ---------- */
 function openSheet(html){const s=$('#sheet');s.innerHTML=`<div class="grab"></div><button class="close" data-act="close" aria-label="Cerrar">×</button><div class="wrap">${html}</div>`;s.classList.add('open');$('#scrim').classList.add('open');s.scrollTop=0;setTimeout(()=>s.querySelector('.close').focus(),50)}
 function closeSheet(){stopAnim();$('#sheet').classList.remove('open');$('#scrim').classList.remove('open')}
+const mchips=ks=>ks.length?`<div class="mlist">${ks.map(k=>`<button data-msheet="${k}">${MUSCLES[k]}</button>`).join('')}</div>`:`<p class="sub" style="font-size:15px;margin-top:4px">Ninguno</p>`;
 function exSheet(id){
   const e=EXMAP[id];
   openSheet(`<h2>${esc(e.n)}</h2><p class="eq">${esc(e.eq)}</p>
   <div class="anim"><div id="fig"></div><button class="play" id="playbtn" data-act="play"></button></div>
-  <p class="fig-note">En rojo, lo que más trabaja; en rosa, lo que ayuda</p>
-  <div class="plate"><div class="maps"><div class="map">${bodySVG('front',e.p,e.s)}<span>Frente</span></div><div class="map">${bodySVG('back',e.p,e.s)}<span>Espalda</span></div></div>
-  <div class="legend"><span><i style="background:var(--muscle)"></i>Principal</span><span><i style="background:var(--muscle2)"></i>Secundario</span></div></div>
-  <div class="mus"><div><h3><i style="background:var(--muscle)"></i>Principales</h3><p>${e.p.map(k=>MUSCLES[k]).join(', ')}</p></div>
-  <div><h3><i style="background:var(--muscle2)"></i>Secundarios</h3><p>${e.s.length?e.s.map(k=>MUSCLES[k]).join(', '):'Ninguno'}</p></div></div>
+  <p class="fig-note">El color muestra cómo participa cada músculo</p>
+  <div class="plate">${bothMaps(e.p,e.s,e.e)}${LEG3}</div>
+  <div class="mus3">
+    <div><h3><i style="background:var(--muscle)"></i>Principal</h3>${mchips(e.p)}</div>
+    <div><h3><i style="background:var(--muscle2)"></i>Secundarios <small class="sub" style="font-weight:400;font-size:13px">ayudan a mover</small></h3>${mchips(e.s)}</div>
+    <div><h3><i style="background:var(--muscle3)"></i>Estabilizadores <small class="sub" style="font-weight:400;font-size:13px">sostienen la postura</small></h3>${mchips(e.e)}</div>
+  </div>
   <ol class="steps">${e.st.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>
   <p class="tip">${esc(e.t)}</p>
+  ${e.er.length?`<div class="errs"><h3>Errores comunes</h3><ul>${e.er.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
   <button class="btn" data-addto="${e.id}">Añadir a una rutina</button>
   ${histHTML(e.id)}`);
   startAnim(e);
+}
+function muscleSheet(k){
+  stopAnim();
+  const m=MUS[k],main=EX.filter(e=>e.p.includes(k)),help=EX.filter(e=>e.s.includes(k));
+  const row=e=>`<button class="row" data-ex="${e.id}"><span class="dot">${bodySVG(sideOf(e.p[0]),e.p,e.s,false,true,e.e)}</span><span><b>${esc(e.n)}</b><small>${esc(e.eq)}</small></span><span class="chev" aria-hidden="true">›</span></button>`;
+  openSheet(`<p class="qstep">${GROUPS[m.g]}</p><h2>${m.n}</h2>
+  <div class="plate">${bothMaps([],[],[],{sel:[k]})}</div>
+  <p class="ginfo">${m.i}</p>
+  <h3 class="sec-title" style="font-size:22px">Mejores ejercicios</h3>
+  <div class="list" style="background:var(--chalk)">${main.map(row).join('')||'<p class="empty">Ningún ejercicio lo trabaja como principal; mira los de abajo.</p>'}</div>
+  ${help.length?`<h3 class="sec-title" style="font-size:22px">También lo trabajan</h3><div class="list" style="background:var(--chalk)">${help.map(row).join('')}</div>`:''}
+  <button class="btn ghost" data-filter="${k}">Ver en la lista de ejercicios</button>`);
+}
+function weekHeat(){
+  const since=Date.now()-7*864e5,h={};let n=0;
+  Object.values(S.logs).filter(l=>l.date>=since).forEach(l=>{n++;l.entries.forEach(en=>{const e=EXMAP[en.ex];if(!e)return;const c=en.sets.length;e.p.forEach(k=>h[k]=(h[k]||0)+c);e.s.forEach(k=>h[k]=(h[k]||0)+c*.5)})});
+  return {h,n};
+}
+function weekCard(){
+  const {h,n}=weekHeat();
+  if(!n) return `<h3 class="sec-title" style="font-size:24px">Tus músculos esta semana</h3><div class="today-card"><p>Cuando completes entrenamientos, aquí verás qué músculos trabajaste en los últimos 7 días y cuáles tienes olvidados.</p></div>`;
+  const zero=Object.keys(MUS).filter(k=>!h[k]);
+  return `<h3 class="sec-title" style="font-size:24px">Tus músculos esta semana</h3>
+  <div class="plate" style="margin-top:6px">${bothMaps([],[],[],{heat:h})}
+  <div class="legend"><span><i style="background:var(--muscle);opacity:.3"></i>Poco</span><span><i style="background:var(--muscle);opacity:.62"></i>Medio</span><span><i style="background:var(--muscle)"></i>Mucho</span></div></div>
+  <p class="sub" style="font-size:14px;margin-top:6px">${n} ${n===1?'entrenamiento':'entrenamientos'} en los últimos 7 días. "Mucho" equivale a unas 10 series o más.</p>
+  ${zero.length?`<p class="lbl" style="margin-top:10px">Sin entrenar esta semana</p>${mchips(zero)}`:`<p class="lbl">¡Has trabajado todos los músculos esta semana!</p>`}`;
 }
 function pickRoutineSheet(exId){
   const e=EXMAP[exId];const rs=sortedRoutines();
@@ -788,7 +997,7 @@ function pickExerciseSheet(){
   <div class="list" id="plist" style="margin-top:10px;background:var(--chalk)"></div>`);
   const draw=()=>{const q=$('#pq').value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
     const l=EX.filter(e=>(e.n+' '+e.p.concat(e.s).map(k=>MUSCLES[k]).join(' ')).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').includes(q));
-    $('#plist').innerHTML=l.map(e=>`<button class="row" data-pick="${e.id}"><span class="dot" style="background:var(--paper)">${bodySVG(sideOf(e.p[0]),e.p,e.s,false,true)}</span><span><b>${esc(e.n)}</b><small>${e.p.map(k=>MUSCLES[k]).join(', ')}</small></span><span class="chev">+</span></button>`).join('')||'<p class="empty">Sin resultados.</p>'};
+    $('#plist').innerHTML=l.map(e=>`<button class="row" data-pick="${e.id}"><span class="dot" style="background:var(--paper)">${bodySVG(sideOf(e.p[0]),e.p,e.s,false,true,e.e)}</span><span><b>${esc(e.n)}</b><small>${e.p.map(k=>MUSCLES[k]).join(', ')}</small></span><span class="chev">+</span></button>`).join('')||'<p class="empty">Sin resultados.</p>'};
   $('#pq').oninput=draw;draw();
 }
 const newItem=ex=>({ex,sets:'3',reps:'10',rest:'90'});
@@ -798,6 +1007,8 @@ document.addEventListener('click',ev=>{
   const t=ev.target.closest('button,[data-muscle]');if(!t) return;
   const d=t.dataset;
   if(d.tab){S.tab=d.tab;S.confirmDel=false;closeSheet();render();scrollTo(0,0);return}
+  if(d.msheet){muscleSheet(d.msheet);return}
+  if(d.filter){closeSheet();S.tab='ex';S.muscle=d.filter;S.q='';render();scrollTo(0,0);return}
   if(d.muscle!==undefined){S.muscle=S.muscle===d.muscle?null:d.muscle;render();return}
   if(d.chip!==undefined){S.muscle=d.chip||null;render();return}
   if(d.ex){exSheet(d.ex);return}
